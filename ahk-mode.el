@@ -103,40 +103,40 @@
 
 ;;; syntax table
 (defvar ahk-mode-syntax-table nil "Syntax table for `ahk-mode'.")
+
 (setq ahk-mode-syntax-table
       (let ((synTable (make-syntax-table)))
         ;; these are also allowed in variable names
         (modify-syntax-entry ?#  "w" synTable)
         (modify-syntax-entry ?_  "w" synTable)
         (modify-syntax-entry ?@  "w" synTable)
-        (modify-syntax-entry ?[  "w" synTable)
-                             (modify-syntax-entry ?]  "w" synTable)
         ;; some additional characters used in paths and switches
         (modify-syntax-entry ?\\  "w" synTable)
-        ;; (modify-syntax-entry ?/  "w" synTable)
         (modify-syntax-entry ?. "." synTable)
         (modify-syntax-entry ?: "." synTable)
         (modify-syntax-entry ?- "." synTable)
+        (modify-syntax-entry ?\;  "< b" synTable)
         ;; for multiline comments (taken from cc-mode)
-        (modify-syntax-entry ?/  ". 14" synTable)
+        (modify-syntax-entry ?\/  ". 14" synTable)
         (modify-syntax-entry ?*  ". 23"   synTable)
         ;; Give CR the same syntax as newline, for selective-display
         (modify-syntax-entry ?\^m "> b" synTable)
         (modify-syntax-entry ?\n "> b"  synTable)
-        (modify-syntax-entry ?` "\\" synTable) ; ` is escape
-        (modify-syntax-entry ?\; "< b" synTable)
+        ;; ` is escape
+        (modify-syntax-entry ?` "\\" synTable) 
         (modify-syntax-entry ?! "." synTable)
         (modify-syntax-entry ?$ "." synTable)
         (modify-syntax-entry ?% "." synTable)
         (modify-syntax-entry ?^ "." synTable)
         (modify-syntax-entry ?& "." synTable)
         (modify-syntax-entry ?~ "." synTable)
-        (modify-syntax-entry ?' "." synTable)
         (modify-syntax-entry ?| "." synTable)
         (modify-syntax-entry ?? "." synTable)
         (modify-syntax-entry ?< "." synTable)
         (modify-syntax-entry ?> "." synTable)
         (modify-syntax-entry ?, "." synTable)
+        ;; single quote strings
+        (modify-syntax-entry ?' "\"" synTable)
         synTable)
       )
 
@@ -206,18 +206,34 @@ Launches default browser and opens the doc's url."
           "Else[ \t]+\\([^I\n][^f\n][^ \n]\\)"
           "\\)"))
 
+(defun ahk-previous-indent ()
+  "Return the indentation level of the previous non-blank line."
+  (save-excursion
+    (forward-line -1)
+    (while (and (looking-at "^[ \t]*$") (not (bobp)))
+      (forward-line -1))
+    (current-indentation)))
+
+(defun ahk-indent-message ()
+  (interactive)
+  (message (format "%s" (ahk-previous-indent))))
+
 (defun ahk-indent-line ()
   "Indent the current line."
   (interactive)
-
   (let ((indent 0)
-        (opening-brace nil) (else nil) (closing-brace) (block-skip nil)
+        (opening-brace nil)
+        (else nil)
+        (closing-brace)
+        (block-skip nil)
         (case-fold-search t))
     ;; do a backward search to determine the indention level
     (save-excursion
       (beginning-of-line)
+
+      ;; if beginning with a comment, indent based on previous line
       (if (looking-at "^;")
-          (setq indent 0)
+          (setq indent (ahk-previous-indent))
         ;; save type of current line
         (setq opening-brace (looking-at "^\\([ \t]*\\)[{(]"))
         (setq else          (looking-at "^\\([ \t]*\\)Else[ \r\n]"))
@@ -431,6 +447,14 @@ Launches default browser and opens the doc's url."
               completions)
           (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no)))))
 
+(defvar ac-source-ahk nil
+      "Completion for AHK mode")
+
+(setq ac-source-ahk
+      '((candidates . (all-completions ac-prefix ahk-all-keywords))
+        (limit . nil)
+        (symbol . "k")))
+
 ;; clear memory
 (setq ahk-commands nil)
 (setq ahk-functions nil)
@@ -471,29 +495,31 @@ Key Bindings
   (setq ahk-variables-regexp nil)
   (setq ahk-keys-regexp nil)
 
-  ;; set options
-  (setq-local comment-start ";"
-              comment-end   ""
-              comment-start-skip ";+ *")
+  (setq-local comment-start ";")
+  (setq-local comment-end   "")
+  (setq-local comment-start-skip ";+ *")
 
-  (setq-local block-comment-start     "/*"
-              block-comment-end       "*/"
-              block-comment-left      " * "
-              block-comment-right     " *"
-              block-comment-top-right ""
-              block-comment-bot-left  " "
-              block-comment-char      ?* )
+  (setq-local block-comment-start     "/*")
+  (setq-local block-comment-end       "*/")
+  (setq-local block-comment-left      " * ")
+  (setq-local block-comment-right     " *")
+  (setq-local block-comment-top-right "")
+  (setq-local block-comment-bot-left  " ")
+  (setq-local block-comment-char      ?*)
 
-  (setq-local indent-line-function   'ahk-indent-line
-              indent-region-function 'ahk-indent-region)
+  (setq-local indent-line-function   'ahk-indent-line)
+  (setq-local indent-region-function 'ahk-indent-region)
 
-  (setq-local parse-sexp-ignore-comments t
-              parse-sexp-lookup-properties t
-              paragraph-start (concat "$\\|" page-delimiter)
-              paragraph-separate paragraph-start
-              paragraph-ignore-fill-prefix t)
+  (setq-local parse-sexp-ignore-comments t)
+  (setq-local parse-sexp-lookup-properties t)
+  (setq-local paragraph-start (concat "$\\|" page-delimiter))
+  (setq-local paragraph-separate paragraph-start)
+  (setq-local paragraph-ignore-fill-prefix t)
 
+  ;; completion
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
+  (add-to-list 'ac-sources  'ac-source-ahk)
+  (add-to-list 'ac-modes 'ahk-mode)
 
   (run-mode-hooks 'ahk-mode-hook))
 
