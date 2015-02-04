@@ -32,7 +32,8 @@
 
 ;; When opening a script file you will get:
 ;; - syntax highlighting
-;; - indention, completion and command help
+;; - indention and command help
+;; - autocomplete and company support
 
 ;;; HISTORY
 
@@ -175,9 +176,8 @@ Launches default browser and opens the doc's url."
 
 (defun ahk-mode-hook-activate-filling ()
   "Activates `auto-fill-mode' and `filladapt-mode'."
-  (auto-fill-mode 1)
-  (if (locate-library "filladapt")
-      (filladapt-mode 1)))
+  (truncate-lines t)
+  (auto-fill-mode 1))
 
 ;;;; indentation
 (defun ahk-calc-indention (str &optional offset)
@@ -232,7 +232,7 @@ Launches default browser and opens the doc's url."
       (beginning-of-line)
 
       ;; if beginning with a comment, indent based on previous line
-      (if (looking-at "^;")
+      (if (looking-at "^\\([ \t*]\\);")
           (setq indent (ahk-previous-indent))
         ;; save type of current line
         (setq opening-brace (looking-at "^\\([ \t]*\\)[{(]"))
@@ -481,7 +481,6 @@ Key Bindings
   (interactive)
   (kill-all-local-variables)
 
-  ;; (c-mode) ; for indentation
   (set-syntax-table ahk-mode-syntax-table)
 
   (setq major-mode 'ahk-mode
