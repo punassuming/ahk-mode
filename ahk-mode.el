@@ -188,9 +188,9 @@ Launches default browser and opens the doc's url."
     (setq i (+ i (length str)))
     i))
 
-                                        ; the follwing regexp is used to detect if a condition is a one line statement or not,
-                                        ; i.e. it matches one line statements but should not match those where the THEN resp.
-                                        ; ELSE body is on its own line ...
+;; the follwing regexp is used to detect if a condition is a one line statement or not,
+;; i.e. it matches one line statements but should not match those where the THEN resp.
+;; ELSE body is on its own line ...
 (defvar ahk-one-line-if-regexp
   (concat "^\\([ \t]*\\)" ;; this is used for indention
           "\\("
@@ -450,8 +450,16 @@ Launches default browser and opens the doc's url."
 (defvar ac-source-ahk nil
       "Completion for AHK mode")
 
+(defvar ac-source-keys-ahk nil
+      "Completion for AHK keys mode")
+
 (setq ac-source-ahk
       '((candidates . (all-completions ac-prefix ahk-all-keywords))
+        (limit . nil)
+        (symbol . "f")))
+
+(setq ac-source-keys-ahk
+      '((candidates . (all-completions ac-prefix ahk-keys))
         (limit . nil)
         (symbol . "k")))
 
@@ -460,7 +468,7 @@ Launches default browser and opens the doc's url."
 (setq ahk-functions nil)
 (setq ahk-keywords nil)
 (setq ahk-variables nil)
-(setq ahk-keys nil)
+;; (setq ahk-keys nil)
 
 (define-derived-mode ahk-mode prog-mode "Autohotkey Mode"
   "Major mode for editing AutoHotkey script (AHK).
@@ -519,6 +527,7 @@ Key Bindings
   ;; completion
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
   (add-to-list 'ac-sources  'ac-source-ahk)
+  (add-to-list 'ac-sources  'ac-source-keys-ahk)
   (add-to-list 'ac-modes 'ahk-mode)
 
   (run-mode-hooks 'ahk-mode-hook))
