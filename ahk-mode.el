@@ -1,9 +1,15 @@
 ;;; ahk-mode.el --- Major mode for editing AHK (AutoHotkey and AutoHotkey_L)
 
-;; Author:   Rich Alesi
-;; Author:   Xah Lee ( http://xahlee.org/ ) - 2012
-;; Author:   Robert Widhopf-Fenk
+;; Copyright (C) 2015 by Rich Alesi
+
+;; Author: Rich Alesi
+;; URL: https://github.com/ralesi/helm-pt
+;; Version: 1.5.2
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
+
+;; Based on work from
+;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
+;; ahk-mode - Author:   Robert Widhopf-Fenk
 
 ;; You can redistribute this program and/or modify it under the terms of the GNU
 ;; General Public License as published by the Free Software Foundation; either
@@ -11,9 +17,9 @@
 
 ;;; Commentary:
 
-;; A major mode for editing AutoHotkey (AHK) script. Taken from snippets
-;; supplied by the above authors in addition to the latest syntax files from the
-;; latest build of SCITE for download location and documentation, see:
+;; A major mode for editing AutoHotkey (AHK) script. Supports commenting,
+;; indentation, syntax highlighting, and help lookup both localling and on
+;; the web.
 
 ;;; INSTALL
 
@@ -24,9 +30,9 @@
 ;; To have emacs automatically load the file when it restarts, and
 ;; automatically use the mode when opening files ending in “.ahk”, do this:
 
-;; ① Put the file 〔ahk-mode.el〕 in the dir 〔~/.emacs.d/〕
-;; ② Put the following lines in your emacs init file (usually at 〔~/.emacs〕).
-;; (autoload 'ahk-mode "ahk-mode" "Load ahk-mode for editing AutoHotkey scripts." t)
+;; This package is located within Melpa.  To install, add 
+;; ("melpa" . "http://melpa.org/packages/") to package-archives and
+;; execute "M-x package-install > ahk-mode"
 
 ;;; FEATURES
 
@@ -37,13 +43,7 @@
 
 ;;; HISTORY
 
-;; version 1.5, 2014-12-14 improved auto complete to work with ac and company-mode
-;; version 1.4, 2014_07_18 latest merge with syntax tables
-;; version 1.2.2, 2012-05-21 modified syntax table so “_” is part of word.
-;; version 1.2.1, 2011-10-15 Minor changes. No visible behavior change.
-;; version 1.2, 2010-02-17 fixed a defect where if source contains “"C:\"”, everything after is badly syntax colored. Thanks to “xinlu.h” and “iain.tuddenham”. Detail at http://code.google.com/p/ergoemacs/issues/detail?id=66
-;; version 1.1, 2010-01-14 Added indentation feature. (press Tab to indent.)
-;; version 1.0, 2010-01-09 First version.
+;; version 1.5.2, 2015-03-07 improved auto complete to work with ac and company-mode
 
 (eval-when-compile
   (require 'font-lock)
@@ -52,7 +52,7 @@
 ;;; Code:
 
 (defconst ahk-mode-version "")
-(setq ahk-mode-version "1.5")
+(setq ahk-mode-version "1.5.2")
 
 (defgroup ahk-mode nil
   "Major mode for editing AutoHotkey script."
@@ -87,7 +87,7 @@
   (file-exists-p ahk-path-exe-installed))
 
 ;;;###autoload
-;; (add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
+(add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
 
 (defvar ahk-mode-map nil "Keymap for ahk-mode")
 (progn
@@ -145,7 +145,7 @@
 
 (defun run-this-ahk-script ()
   (interactive)
-  (lexical-let*
+  (let*
       ((file (shell-quote-argument (buffer-file-name)))
        (optional-ahk-exe (and (stringp ahk-path-exe-optional)
                               (file-exists-p ahk-path-exe-optional)))
@@ -530,8 +530,6 @@ Key Bindings
   (add-to-list 'ac-modes 'ahk-mode)
 
   (run-mode-hooks 'ahk-mode-hook))
-
-(add-to-list 'auto-mode-alist '("\\.ahk\\'" . ahk-mode))
 
 (provide 'ahk-mode)
 
