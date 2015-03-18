@@ -12,7 +12,7 @@ An Emacs major mode for editing autohotkey scripts (.ahk).
 
 ## Installation ##
 
-Once melpa is added to `package-archives`, simply perform `M-x package-install > ahk-mode`.
+Once melpa is added to `package-archives`, simply perform `M-x package-install RET ahk-mode RET`.
 
 
 ## TODO ##

@@ -47,7 +47,8 @@
 
 (eval-when-compile
   (require 'font-lock)
-  (require 'cl))
+  (require 'cl)
+  (require 'auto-complete-config))
 
 ;;; Code:
 
@@ -175,8 +176,7 @@ Launches default browser and opens the doc's url."
     ))
 
 (defun ahk-mode-hook-activate-filling ()
-  "Activates `auto-fill-mode' and `filladapt-mode'."
-  (truncate-lines t)
+  "Activates `auto-fill-mode' and truncates lines."
   (auto-fill-mode 1))
 
 ;;;; indentation
@@ -364,23 +364,23 @@ Launches default browser and opens the doc's url."
 ;;; font-lock
 
 (defvar ahk-commands
-  '("AllowSameLineComments" "ClipboardTimeout" "CommentFlag" "ErrorStdOut" "EscapeChar" "HotkeyInterval" "HotkeyModifierTimeout" "Hotstring" "IfWinActive" "IfWinExist" "IfWinNotActive" "IfWinNotExist" "Include" "IncludeAgain" "InstallKeybdHook" "InstallMouseHook" "KeyHistory" "LTrim" "MaxHotkeysPerInterval" "MaxMem" "MaxThreads" "MaxThreadsBuffer" "MaxThreadsPerHotkey" "NoEnv" "NoTrayIcon" "Persistent" "SingleInstance" "UseHook" "WinActivateForce" "AutoTrim" "BlockInput" "Break" "Click" "ClipWait" "Continue" "Control" "ControlClick" "ControlFocus" "ControlGet" "ControlGetFocus" "ControlGetPos" "ControlGetText" "ControlMove" "ControlSend" "ControlSendRaw" "ControlSetText" "CoordMode" "Critical" "DetectHiddenText" "DetectHiddenWindows" "Drive" "DriveGet" "DriveSpaceFree" "Edit" "Else" "EnvAdd" "EnvDiv" "EnvGet" "EnvMult" "EnvSet" "EnvSub" "EnvUpdate" "Exit" "ExitApp" "FileAppend" "FileCopy" "FileCopyDir" "FileCreateDir" "FileCreateShortcut" "FileDelete" "FileGetAttrib" "FileGetShortcut" "FileGetSize" "FileGetTime" "FileGetVersion" "FileInstall" "FileMove" "FileMoveDir" "FileRead" "FileReadLine" "FileRecycle" "FileRecycleEmpty" "FileRemoveDir" "FileSelectFile" "FileSelectFolder" "FileSetAttrib" "FileSetTime" "FormatTime" "GetKeyState" "Gosub" "Goto" "GroupActivate" "GroupAdd" "GroupClose" "GroupDeactivate" "Gui" "GuiControl" "GuiControlGet" "Hotkey" "If" "IfEqual" "IfExist" "IfGreater" "IfGreaterOrEqual" "IfInString" "IfLess" "IfLessOrEqual" "IfMsgBox" "IfNotEqual" "IfNotExist" "IfNotInString" "IfWinActive" "IfWinExist" "IfWinNotActive" "IfWinNotExist" "ImageSearch" "IniDelete" "IniRead" "IniWrite" "Input" "InputBox" "KeyHistory" "KeyWait" "ListHotkeys" "ListLines" "ListVars" "Loop" "Menu" "MouseClick" "MouseClickDrag" "MouseGetPos" "MouseMove" "MsgBox" "OnExit" "OutputDebug" "Pause" "PixelGetColor" "PixelSearch" "PostMessage" "Process" "Progress" "Random" "RegDelete" "RegRead" "RegWrite" "Reload" "Repeat" "Return" "Run" "RunAs" "RunWait" "Send" "SendEvent" "SendInput" "SendMessage" "SendMode" "SendPlay" "SendRaw" "SetBatchLines" "SetCapslockState" "SetControlDelay" "SetDefaultMouseSpeed" "SetEnv" "SetFormat" "SetKeyDelay" "SetMouseDelay" "SetNumlockState" "SetScrollLockState" "SetStoreCapslockMode" "SetTimer" "SetTitleMatchMode" "SetWinDelay" "SetWorkingDir" "Shutdown" "Sleep" "Sort" "SoundBeep" "SoundGet" "SoundGetWaveVolume" "SoundPlay" "SoundSet" "SoundSetWaveVolume" "SplashImage" "SplashTextOff" "SplashTextOn" "SplitPath" "StatusBarGetText" "StatusBarWait" "StringCaseSense" "StringGetPos" "StringLeft" "StringLen" "StringLower" "StringMid" "StringReplace" "StringRight" "StringSplit" "StringTrimLeft" "StringTrimRight" "StringUpper" "Suspend" "SysGet" "Thread" "ToolTip" "Transform" "TrayTip" "URLDownloadToFile" "While" "WinActivate" "WinActivateBottom" "WinClose" "WinGet" "WinGetActiveStats" "WinGetActiveTitle" "WinGetClass" "WinGetPos" "WinGetText" "WinGetTitle" "WinHide" "WinKill" "WinMaximize" "WinMenuSelectItem" "WinMinimize" "WinMinimizeAll" "WinMinimizeAllUndo" "WinMove" "WinRestore" "WinSet" "WinSetTitle" "WinShow" "WinWait" "WinWaitActive" "WinWaitClose" "WinWaitNotActive")
+  '("Abort" "AboveNormal" "Add" "All" "Alnum" "Alpha" "AltSubmit" "AlwaysOnTop" "And" "Asc" "AutoSize" "AutoTrim" "Background" "BackgroundTrans" "BelowNormal" "Between" "BitAnd" "BitNot" "BitOr" "BitShiftLeft" "BitShiftRight" "BitXOr" "BlockInput" "Border" "Bottom" "Break" "Button" "Buttons" "ByRef" "Cancel" "Capacity" "Caption" "Catch" "Ceil" "Center" "Check" "Check3" "Checkbox" "Checked" "CheckedGray" "Checks" "Choose" "ChooseString" "Chr" "Click" "ClipWait" "Close" "Color" "ComboBox" "Contains" "Continue" "Control" "ControlClick" "ControlFocus" "ControlGet" "ControlGetFocus" "ControlGetPos" "ControlGetText" "ControlList" "ControlMove" "ControlSend" "ControlSendRaw" "ControlSetText" "CoordMode" "Count" "Critical" "DDL" "Date" "DateTime" "Days" "Default" "Delete" "DeleteAll" "Delimiter" "Deref" "Destroy" "DetectHiddenText" "DetectHiddenWindows" "Digit" "Disable" "Disabled" "Displays" "Drive" "DriveGet" "DriveSpaceFree" "DropDownList" "Edit" "Eject" "Else" "Enable" "Enabled" "EnvAdd" "EnvDiv" "EnvGet" "EnvMult" "EnvSet" "EnvSub" "EnvUpdate" "Error" "ExStyle" "Exist" "Exit" "ExitApp" "Exp" "Expand" "FileAppend" "FileCopy" "FileCopyDir" "FileCreateDir" "FileCreateShortcut" "FileDelete" "FileEncoding" "FileGetAttrib" "FileGetShortcut" "FileGetSize" "FileGetTime" "FileGetVersion" "FileInstall" "FileMove" "FileMoveDir" "FileOpen" "FileRead" "FileReadLine" "FileRecycle" "FileRecycleEmpty" "FileRemoveDir" "FileSelectFile" "FileSelectFolder" "FileSetAttrib" "FileSetTime" "FileSystem" "Finally" "First" "Flash" "Float" "FloatFast" "Floor" "Focus" "Font" "For" "Format" "FormatTime" "GetKeyState" "Gosub" "Goto" "Grid" "Group" "GroupActivate" "GroupAdd" "GroupBox" "GroupClose" "GroupDeactivate" "Gui" "GuiClose" "GuiContextMenu" "GuiControl" "GuiControlGet" "GuiDropFiles" "GuiEscape" "GuiSize" "HKCC" "HKCR" "HKCU" "HKEY_CLASSES_ROOT" "HKEY_CURRENT_CONFIG" "HKEY_CURRENT_USER" "HKEY_LOCAL_MACHINE" "HKEY_USERS" "HKLM" "HKU" "HScroll" "Hdr" "Hidden" "Hide" "High" "Hotkey" "Hours" "ID" "IDLast" "Icon" "IconSmall" "If" "IfEqual" "IfExist" "IfGreater" "IfGreaterOrEqual" "IfInString" "IfLess" "IfLessOrEqual" "IfMsgBox" "IfNotEqual" "IfWinActive" "IfWinExist" "IfWinNotActive" "IfWinNotExist" "Ignore" "ImageList" "ImageSearch" "In" "IniDelete" "IniRead" "IniWrite" "Input" "InputBox" "Integer" "IntegerFast" "Interrupt" "Is" "Join" "KeyHistory" "KeyWait" "LTrim" "Label" "LastFound" "LastFoundExist" "Left" "Limit" "Lines" "List" "ListBox" "ListHotkeys" "ListLines" "ListVars" "ListView" "Ln" "Lock" "Log" "Logoff" "Loop" "Low" "Lower" "Lowercase" "MainWindow" "Margin" "MaxSize" "Maximize" "MaximizeBox" "Menu" "MinMax" "MinSize" "Minimize" "MinimizeBox" "Minutes" "Mod" "MonthCal" "Mouse" "MouseClick" "MouseClickDrag" "MouseGetPos" "MouseMove" "Move" "MsgBox" "Multi" "NA" "No" "NoActivate" "NoDefault" "NoHide" "NoIcon" "NoMainWindow" "NoSort" "NoSortHdr" "NoStandard" "NoTab" "NoTimers" "Normal" "Not" "Number" "Off" "Ok" "On" "OnExit" "Or" "OutputDebug" "OwnDialogs" "Owner" "Parse" "Password" "Pause" "Pic" "Picture" "Pixel" "PixelGetColor" "PixelSearch" "Pos" "PostMessage" "Pow" "Priority" "Process" "ProcessName" "Progress" "REG_BINARY" "REG_DWORD" "REG_EXPAND_SZ" "REG_MULTI_SZ" "REG_SZ" "RGB" "RTrim" "Radio" "Random" "Range" "Read" "ReadOnly" "Realtime" "Redraw" "RegDelete" "RegRead" "RegWrite" "Region" "Relative" "Reload" "Rename" "Report" "Resize" "Restore" "Retry" "Return" "Right" "Round" "Run" "RunAs" "RunWait" "Screen" "Seconds" "Section" "See" "Send" "SendInput" "SendLevel" "SendMessage" "SendMode" "SendPlay" "SendRaw" "Serial" "SetBatchLines" "SetCapslockState" "SetControlDelay" "SetDefaultMouseSpeed" "SetEnv" "SetFormat" "SetKeyDelay" "SetLabel" "SetMouseDelay" "SetNumlockState" "SetRegView" "SetScrollLockState" "SetStoreCapslockMode" "SetTimer" "SetTitleMatchMode" "SetWinDelay" "SetWorkingDir" "ShiftAltTab" "Show" "Shutdown" "Sin" "Single" "Sleep" "Slider" "Sort" "SortDesc" "SoundBeep" "SoundGet" "SoundGetWaveVolume" "SoundPlay" "SoundSet" "SoundSetWaveVolume" "SplashImage" "SplashTextOff" "SplashTextOn" "SplitPath" "Sqrt" "Standard" "Status" "StatusBar" "StatusBarGetText" "StatusBarWait" "StatusCD" "StringCaseSense" "StringGetPos" "StringLeft" "StringLen" "StringLower" "StringMid" "StringReplace" "StringRight" "StringSplit" "StringTrimLeft" "StringTrimRight" "StringUpper" "Style" "Submit" "Suspend" "SysGet" "SysMenu" "Tab" "Tab2" "TabStop" "Tan" "Text" "Theme" "Thread" "Throw" "Tile" "Time" "Tip" "ToggleCheck" "ToggleEnable" "ToolTip" "ToolWindow" "Top" "Topmost" "TransColor" "Transform" "Transparent" "Tray" "TrayTip" "TreeView" "Trim" "Try" "TryAgain" "Type" "UnCheck" "Unicode" "Unlock" "Until" "UpDown" "Upper" "Uppercase" "UrlDownloadToFile" "UseErrorLevel" "VScroll" "Var" "Vis" "VisFirst" "Visible" "Wait" "WaitClose" "WantCtrlA" "WantF2" "WantReturn" "While-loop" "WinActivate" "WinActivateBottom" "WinClose" "WinGet" "WinGetActiveStats" "WinGetActiveTitle" "WinGetClass" "WinGetPos" "WinGetText" "WinGetTitle" "WinHide" "WinKill" "WinMaximize" "WinMenuSelectItem" "WinMinimize" "WinMinimizeAll" "WinMinimizeAllUndo" "WinMove" "WinRestore" "WinSet" "WinSetTitle" "WinShow" "WinWait" "WinWaitActive" "WinWaitClose" "WinWaitNotActive" "Wrap" "Xdigit" "Yes" "ahk_class" "ahk_group" "ahk_id" "ahk_pid" "bold" "global" "italic" "local" "norm" "static" "strike" "underline" "xm" "xp" "xs" "ym" "yp" "ys")
   "AHK keywords.")
 
+(defvar ahk-directives
+  '("#ClipboardTimeout" "#CommentFlag" "#ErrorStdOut" "#EscapeChar" "#HotkeyInterval" "#HotkeyModifierTimeout" "#Hotstring" "#If" "#IfTimeout" "#IfWinActive" "#IfWinExist" "#Include" "#InputLevel" "#InstallKeybdHook" "#InstallMouseHook" "#KeyHistory" "#LTrim" "#MaxHotkeysPerInterval" "#MaxMem" "#MaxThreads" "#MaxThreadsBuffer" "#MaxThreadsPerHotkey" "#MenuMaskKey" "#NoEnv" "#NoTrayIcon" "#Persistent" "#SingleInstance" "#UseHook" "#Warn" "#WinActivateForce")
+  "AHK directives")
+
 (defvar ahk-functions
-  '("Abs" "ACos" "Asc" "ASin" "ATan" "Ceil" "Chr" "Cos" "DllCall" "Exp" "FileExist" "Floor" "GetKeyState" "IL_Add" "IL_Create" "IL_Destroy" "InStr" "IsFunc" "IsLabel" "Ln" "Log" "LV_Add" "LV_Delete" "LV_DeleteCol" "LV_GetCount" "LV_GetNext" "LV_GetText" "LV_Insert" "LV_InsertCol" "LV_Modify" "LV_ModifyCol" "LV_SetImageList" "Mod" "NumGet" "NumPut" "OnMessage" "RegExMatch" "RegExReplace" "RegisterCallback" "Round" "SB_SetIcon" "SB_SetParts" "SB_SetText" "Sin" "Sqrt" "StrLen" "SubStr" "Tan" "TV_Add" "TV_Delete" "TV_GetChild" "TV_GetCount" "TV_GetNext" "TV_Get" "TV_GetParent" "TV_GetPrev" "TV_GetSelection" "TV_GetText" "TV_Modify" "VarSetCapacity" "WinActive" "WinExist")
+  '("ACos" "ASin" "ATan" "Abs" "Asc" "Ceil" "Chr" "ComObjActive" "ComObjArray" "ComObjConnect" "ComObjCreate" "ComObjEnwrap" "ComObjError" "ComObjFlags" "ComObjGet" "ComObjMissing" "ComObjParameter" "ComObjQuery" "ComObjType" "ComObjUnwrap" "ComObjValue" "Cos" "DllCall" "Exp" "FileExist" "Floor" "Func" "Functions" "GetKeyName" "GetKeySC" "GetKeyState" "GetKeyVK" "IL_Add" "IL_Create" "IL_Destroy" "InStr" "IsByRef" "IsFunc" "IsLabel" "IsObject" "LV_Add" "LV_Delete" "LV_DeleteCol" "LV_GetCount" "LV_GetNext" "LV_GetText" "LV_Insert" "LV_InsertCol" "LV_Modify" "LV_ModifyCol" "LV_SetImageList" "Ln" "Log" "Mod" "NumGet" "NumPut" "OnMessage" "RegExMatch" "RegExReplace" "RegisterCallback" "Round" "SB_SetIcon" "SB_SetParts" "SB_SetText" "Sin" "Sqrt" "StrGet" "StrLen" "StrPut" "SubStr" "TV_Add" "TV_Delete" "TV_Get" "TV_GetChild" "TV_GetCount" "TV_GetNext" "TV_GetParent" "TV_GetPrev" "TV_GetSelection" "TV_GetText" "TV_Modify" "Tan" "VarSetCapacity" "WinActive" "WinExist")
   "AHK functions.")
 
-(defvar ahk-keywords
-  '("ACos" "ASin" "ATan" "Abort" "AboveNormal" "Abs" "Add" "All" "Alnum" "Alpha" "AltSubmit" "AltTab" "AltTabAndMenu" "AltTabMenu" "AltTabMenuDismiss" "AlwaysOnTop" "And" "Asc" "AutoSize" "Background" "BackgroundTrans" "BelowNormal" "Between" "BitAnd" "BitNot" "BitOr" "BitShiftLeft" "BitShiftRight" "BitXOr" "Border" "Bottom" "Bottom" "Button" "Buttons" "ByRef" "Cancel" "Cancel" "Capacity" "Caption" "Ceil" "Center" "Center" "Check" "Check3" "Checkbox" "Checked" "CheckedGray" "Choose" "ChooseString" "Chr" "Click" "Close" "Close" "Color" "ComboBox" "Contains" "ControlList" "Cos" "Count" "DDL" "Date" "DateTime" "Days" "Default" "Delete" "DeleteAll" "Delimiter" "Deref" "Destroy" "Digit" "Disable" "Disabled" "DropDownList" "Eject" "Enable" "Enabled" "Error" "ExStyle" "Exist" "Exp" "Expand" "FileSystem" "First" "Flash" "Float" "FloatFast" "Floor" "Focus" "Font" "Grid" "Group" "GroupBox" "GuiClose" "GuiContextMenu" "GuiDropFiles" "GuiEscape" "GuiSize" "HKCC" "HKCR" "HKCU" "HKEY_CLASSES_ROOT" "HKEY_CURRENT_CONFIG" "HKEY_CURRENT_USER" "HKEY_LOCAL_MACHINE" "HKEY_USERS" "HKLM" "HKU" "HScroll" "Hdr" "Hidden" "Hide" "High" "Hours" "ID" "IDLast" "Icon" "IconSmall" "Ignore" "ImageList" "In" "Integer" "IntegerFast" "Interrupt" "Is" "Join" "LTrim" "Label" "Label" "LastFound" "LastFoundExist" "Left" "Limit" "Lines" "List" "ListBox" "ListView" "Ln" "Lock" "Log" "Logoff" "Low" "Lower" "Lowercase" "MainWindow" "Margin" "MaxSize" "Maximize" "MaximizeBox" "MinMax" "MinSize" "Minimize" "MinimizeBox" "Minutes" "Mod" "MonthCal" "Mouse" "Move" "Multi" "NA" "No" "NoActivate" "NoDefault" "NoHide" "NoIcon" "NoMainWindow" "NoSort" "NoSortHdr" "NoStandard" "NoTab" "NoTimers" "Normal" "Not" "Number" "Number" "Off" "Ok" "On" "Or" "OwnDialogs" "Owner" "Parse" "Password" "Password" "Pic" "Picture" "Pixel" "Pos" "Pow" "Priority" "ProcessName" "REG_BINARY" "REG_DWORD" "REG_EXPAND_SZ" "REG_MULTI_SZ" "REG_SZ" "RGB" "RTrim" "Radio" "Range" "Read" "ReadOnly" "Realtime" "Redraw" "Region" "Relative" "Rename" "Report" "Resize" "Restore" "Retry" "Right" "Round" "Screen" "Seconds" "Section" "Section" "Serial" "SetLabel" "ShiftAltTab" "Show" "Sin" "Single" "Slider" "SortDesc" "Sqrt" "Standard" "Status" "StatusBar" "StatusCD" "Style" "Submit" "SysMenu" "Tab" "Tab2" "TabStop" "Tan" "Text" "Text" "T;;;heme" "Tile" "Time" "Tip" "ToggleCheck" "ToggleEnable" "ToolWindow" "Top" "Top" "Topmost" "TransColor" "Transparent" "Tray" "TreeView" "TryAgain" "Type" "UnCheck" "Unicode" "Unlock" "UpDown" "Upper" "Uppercase" "UseErrorLevel" "VScroll" "Vis" "VisFirst" "Visible" "Wait" "WaitClose" "WantCtrlA" "WantF2" "WantReturn" "Wrap" "Xdigit" "Yes" "ahk_class" "ahk_group" "ahk_id" "ahk_pid" "bold" "global" "italic" "local" "norm" "static" "strike" "underline" "xm" "xp" "xs" "ym" "yp" "ys" "{AltDown}" "{AltUp}" "{Blind}" "{Click}" "{CtrlDown}" "{CtrlUp}" "{LWinDown}" "{LWinUp}" "{RWinDown}" "{RWinUp}" "{Raw}" "{ShiftDown}" "{ShiftUp}")
-  "AHK lang keywords.")
-
 (defvar ahk-variables
-  '("A_AhkPath" "A_AhkVersion" "A_AppData" "A_AppDataCommon" "A_AutoTrim" "A_BatchLines" "A_CaretX" "A_CaretY" "A_ComputerName" "A_ControlDelay" "A_Cursor" "A_DD" "A_DDD" "A_DDDD" "A_DefaultMouseSpeed" "A_Desktop" "A_DesktopCommon" "A_DetectHiddenText" "A_DetectHiddenWindows" "A_EndChar" "A_EventInfo" "A_ExitReason" "A_FormatFloat" "A_FormatInteger" "A_Gui" "A_GuiEvent" "A_GuiControl" "A_GuiControlEvent" "A_GuiHeight" "A_GuiWidth" "A_GuiX" "A_GuiY" "A_Hour" "A_IconFile" "A_IconHidden" "A_IconNumber" "A_IconTip" "A_Index" "A_IPAddress1" "A_IPAddress2" "A_IPAddress3" "A_IPAddress4" "A_ISAdmin" "A_IsCompiled" "A_IsCritical" "A_IsPaused" "A_IsSuspended" "A_KeyDelay" "A_Language" "A_LastError" "A_LineFile" "A_LineNumber" "A_LoopField" "A_LoopFileAttrib" "A_LoopFileDir" "A_LoopFileExt" "A_LoopFileFullPath" "A_LoopFileLongPath" "A_LoopFileName" "A_LoopFileShortName" "A_LoopFileShortPath" "A_LoopFileSize" "A_LoopFileSizeKB" "A_LoopFileSizeMB" "A_LoopFileTimeAccessed" "A_LoopFileTimeCreated" "A_LoopFileTimeModified" "A_LoopReadLine" "A_LoopRegKey" "A_LoopRegName" "A_LoopRegSubkey" "A_LoopRegTimeModified" "A_LoopRegType" "A_MDAY" "A_Min" "A_MM" "A_MMM" "A_MMMM" "A_Mon" "A_MouseDelay" "A_MSec" "A_MyDocuments" "A_Now" "A_NowUTC" "A_NumBatchLines" "A_OSType" "A_OSVersion" "A_PriorHotkey" "A_ProgramFiles" "A_Programs" "A_ProgramsCommon" "A_ScreenHeight" "A_ScreenWidth" "A_ScriptDir" "A_ScriptFullPath" "A_ScriptName" "A_Sec" "A_Space" "A_StartMenu" "A_StartMenuCommon" "A_Startup" "A_StartupCommon" "A_StringCaseSense" "A_Tab" "A_Temp" "A_ThisFunc" "A_ThisHotkey" "A_ThisLabel" "A_ThisMenu" "A_ThisMenuItem" "A_ThisMenuItemPos" "A_TickCount" "A_TimeIdle" "A_TimeIdlePhysical" "A_TimeSincePriorHotkey" "A_TimeSinceThisHotkey" "A_TitleMatchMode" "A_TitleMatchModeSpeed" "A_UserName" "A_WDay" "A_WinDelay" "A_WinDir" "A_WorkingDir" "A_YDay" "A_YEAR" "A_YWeek" "A_YYYY" "Clipboard" "ClipboardAll" "ComSpec" "ErrorLevel" "ProgramFiles" "True" "False" )
+  '("A_AhkPath" "A_AhkVersion" "A_AppData" "A_AppDataCommon" "A_AutoTrim" "A_BatchLines" "A_CaretX" "A_CaretY" "A_ComputerName" "A_ControlDelay" "A_Cursor" "A_DD" "A_DDD" "A_DDDD" "A_DefaultMouseSpeed" "A_Desktop" "A_DesktopCommon" "A_DetectHiddenText" "A_DetectHiddenWindows" "A_EndChar" "A_EventInfo" "A_ExitReason" "A_FileEncoding" "A_FormatFloat" "A_FormatInteger" "A_Gui" "A_GuiControl" "A_GuiControlEvent" "A_GuiEvent" "A_GuiHeight" "A_GuiWidth" "A_GuiX" "A_GuiY" "A_Hour" "A_IPAddress1" "A_IPAddress2" "A_IPAddress3" "A_IPAddress4" "A_ISAdmin" "A_IconFile" "A_IconHidden" "A_IconNumber" "A_IconTip" "A_Index" "A_Is64bitOS" "A_IsAdmin" "A_IsCompiled" "A_IsCritical" "A_IsPaused" "A_IsSuspended" "A_IsUnicode" "A_KeyDelay" "A_Language" "A_LastError" "A_LineFile" "A_LineNumber" "A_LoopField" "A_LoopFileAttrib" "A_LoopFileDir" "A_LoopFileExt" "A_LoopFileFullPath" "A_LoopFileLongPath" "A_LoopFileName" "A_LoopFileName," "A_LoopFileShortName" "A_LoopFileShortPath" "A_LoopFileSize" "A_LoopFileSizeKB" "A_LoopFileSizeMB" "A_LoopFileTimeAccessed" "A_LoopFileTimeCreated" "A_LoopFileTimeModified" "A_LoopReadLine" "A_LoopRegKey" "A_LoopRegName" "A_LoopRegName," "A_LoopRegSubkey" "A_LoopRegTimeModified" "A_LoopRegType" "A_MDAY" "A_MM" "A_MMM" "A_MMMM" "A_MSec" "A_Min" "A_Mon" "A_MouseDelay" "A_MyDocuments" "A_Now" "A_NowUTC" "A_NumBatchLines" "A_OSType" "A_OSVersion" "A_PriorHotkey" "A_PriorKey" "A_ProgramFiles" "A_Programs" "A_ProgramsCommon" "A_PtrSize" "A_RegView" "A_ScreenDPI" "A_ScreenHeight" "A_ScreenWidth" "A_ScriptDir" "A_ScriptFullPath" "A_ScriptHwnd" "A_ScriptName" "A_Sec" "A_Space" "A_StartMenu" "A_StartMenuCommon" "A_Startup" "A_StartupCommon" "A_StringCaseSense" "A_Tab" "A_Temp" "A_ThisFunc" "A_ThisHotkey" "A_ThisLabel" "A_ThisMenu" "A_ThisMenuItem" "A_ThisMenuItemPos" "A_TickCount" "A_TimeIdle" "A_TimeIdlePhysical" "A_TimeSincePriorHotkey" "A_TimeSinceThisHotkey" "A_TitleMatchMode" "A_TitleMatchModeSpeed" "A_UserName" "A_WDay" "A_WinDelay" "A_WinDir" "A_WorkingDir" "A_YDay" "A_YEAR" "A_YWeek" "A_YYYY" "Clipboard" "ClipboardAll" "ComSpec" "ErrorLevel" "False" "ProgramFiles" "True" "Variable")
   "AHK variables.")
 
 (defvar ahk-keys
-  '("Alt" "AltDown" "AltUp" "AppsKey" "BS" "BackSpace" "Browser_Back" "Browser_Favorites" "Browser_Forward" "Browser_Home" "Browser_Refresh" "Browser_Search" "Browser_Stop" "CapsLock" "Control" "Ctrl" "CtrlBreak" "CtrlDown" "CtrlUp" "Del" "Delete" "Down" "End" "Enter" "Esc" "Escape" "F1" "F10" "F11" "F12" "F13" "F14" "F15" "F16" "F17" "F18" "F19" "F2" "F20" "F21" "F22" "F23" "F24" "F3" "F4" "F5" "F6" "F7" "F8" "F9" "Home" "Ins" "Insert" "Joy1" "Joy10" "Joy11" "Joy12" "Joy13" "Joy14" "Joy15" "Joy16" "Joy17" "Joy18" "Joy19" "Joy2" "Joy20" "Joy21" "Joy22" "Joy23" "Joy24" "Joy25" "Joy26" "Joy27" "Joy28" "Joy29" "Joy3" "Joy30" "Joy31" "Joy32" "Joy4" "Joy5" "Joy6" "Joy7" "Joy8" "Joy9" "JoyAxes" "JoyButtons" "JoyInfo" "JoyName" "JoyPOV" "JoyR" "JoyU" "JoyV" "JoyX" "JoyY" "JoyZ" "LAlt" "LButton" "LControl" "LCtrl" "LShift" "LWin" "LWinDown" "LWinUp" "Launch_App1" "Launch_App2" "Launch_Mail" "Launch_Media" "Left" "MButton" "Media_Next" "Media_Play_Pause" "Media_Prev" "Media_Stop" "NumLock" "Numpad0" "Numpad1" "Numpad2" "Numpad3" "Numpad4" "Numpad5" "Numpad6" "Numpad7" "Numpad8" "Numpad9" "NumpadAdd" "NumpadClear" "NumpadDel" "NumpadDiv" "NumpadDot" "NumpadDown" "NumpadEnd" "NumpadEnter" "NumpadHome" "NumpadIns" "NumpadLeft" "NumpadMult" "NumpadPgdn" "NumpadPgup" "NumpadRight" "NumpadSub" "NumpadUp" "PGDN" "PGUP" "Pause" "PrintScreen" "RAlt" "RButton" "RControl" "RCtrl" "RShift" "RWin" "RWinDown" "RWinUp" "Right" "ScrollLock" "Shift" "ShiftDown" "ShiftUp" "Space" "Tab" "Up" "Volume_Down" "Volume_Mute" "Volume_Up" "WheelDown" "WheelLeft" "WheelRight" "WheelUp" "XButton1" "XButton2")
+  '("Alt" "AltDown" "AltTab" "AltTabAndMenu" "AltTabMenu" "AltTabMenuDismiss" "AltUp" "AppsKey" "BS" "BackSpace" "Browser_Back" "Browser_Favorites" "Browser_Forward" "Browser_Home" "Browser_Refresh" "Browser_Search" "Browser_Stop" "CapsLock" "Control" "Ctrl" "CtrlBreak" "CtrlDown" "CtrlUp" "Del" "Delete" "Down" "End" "Enter" "Esc" "Escape" "F1" "F10" "F11" "F12" "F13" "F14" "F15" "F16" "F17" "F18" "F19" "F2" "F20" "F21" "F22" "F23" "F24" "F3" "F4" "F5" "F6" "F7" "F8" "F9" "Home" "Ins" "Insert" "Joy1" "Joy10" "Joy11" "Joy12" "Joy13" "Joy14" "Joy15" "Joy16" "Joy17" "Joy18" "Joy19" "Joy2" "Joy20" "Joy21" "Joy22" "Joy23" "Joy24" "Joy25" "Joy26" "Joy27" "Joy28" "Joy29" "Joy3" "Joy30" "Joy31" "Joy32" "Joy4" "Joy5" "Joy6" "Joy7" "Joy8" "Joy9" "JoyAxes" "JoyButtons" "JoyInfo" "JoyName" "JoyPOV" "JoyR" "JoyU" "JoyV" "JoyX" "JoyY" "JoyZ" "LAlt" "LButton" "LControl" "LCtrl" "LShift" "LWin" "LWinDown" "LWinUp" "Launch_App1" "Launch_App2" "Launch_Mail" "Launch_Media" "Left" "MButton" "Media_Next" "Media_Play_Pause" "Media_Prev" "Media_Stop" "NumLock" "Numpad0" "Numpad1" "Numpad2" "Numpad3" "Numpad4" "Numpad5" "Numpad6" "Numpad7" "Numpad8" "Numpad9" "NumpadAdd" "NumpadClear" "NumpadDel" "NumpadDiv" "NumpadDot" "NumpadDown" "NumpadEnd" "NumpadEnter" "NumpadHome" "NumpadIns" "NumpadLeft" "NumpadMult" "NumpadPgdn" "NumpadPgup" "NumpadRight" "NumpadSub" "NumpadUp" "PGDN" "PGUP" "Pause" "PrintScreen" "RAlt" "RButton" "RControl" "RCtrl" "RShift" "RWin" "RWinDown" "RWinUp" "Right" "ScrollLock" "Shift" "ShiftDown" "ShiftUp" "Space" "Tab" "Up" "Volume_Down" "Volume_Mute" "Volume_Up" "WheelDown" "WheelLeft" "WheelRight" "WheelUp" "XButton1" "XButton2")
   "AHK keywords for keys.")
 
 (defvar ahk-operators
@@ -397,7 +397,7 @@ Launches default browser and opens the doc's url."
 
 (defvar ahk-commands-regexp (regexp-opt ahk-commands 'words))
 (defvar ahk-functions-regexp (regexp-opt ahk-functions 'words))
-(defvar ahk-keywords-regexp (regexp-opt ahk-keywords 'words))
+(defvar ahk-directives-regexp (regexp-opt ahk-directives 'words))
 (defvar ahk-variables-regexp (regexp-opt ahk-variables 'words))
 (defvar ahk-keys-regexp (regexp-opt ahk-keys 'words))
 (defvar ahk-operators-regexp (regexp-opt ahk-operators 'words))
@@ -411,7 +411,7 @@ Launches default browser and opens the doc's url."
         ("%[^% ]+%"                        . font-lock-variable-name-face)
         (,ahk-commands-regexp              . font-lock-type-face)
         (,ahk-functions-regexp             . font-lock-function-name-face)
-        (,ahk-keywords-regexp              . font-lock-keyword-face)
+        (,ahk-directives-regexp              . font-lock-keyword-face)
         (,ahk-variables-regexp             . font-lock-variable-name-face)
         (,ahk-keys-regexp                  . font-lock-constant-face)
         (,ahk-operators-regexp             . font-lock-warning-face)
@@ -422,13 +422,13 @@ Launches default browser and opens the doc's url."
 (defvar ahk-kwdList nil "AHK keywords.")
 
 (defvar ahk-all-keywords nil "list of all ahk keywords")
-(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-keywords ahk-variables))
+(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
 
 
 (setq ahk-kwdList (make-hash-table :test 'equal))
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-commands)
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-functions)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-keywords)
+(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-directives)
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-variables)
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-keys)
 (put 'ahk-kwdList 'risky-local-variable t)
@@ -453,10 +453,18 @@ Launches default browser and opens the doc's url."
 (defvar ac-source-keys-ahk nil
       "Completion for AHK keys mode")
 
+(defvar ac-source-directives-ahk nil
+      "Completion for AHK directives mode")
+
 (setq ac-source-ahk
       '((candidates . (all-completions ac-prefix ahk-all-keywords))
         (limit . nil)
         (symbol . "f")))
+
+(setq ac-source-directives-ahk
+      '((candidates . (all-completions ac-prefix ahk-directives))
+        (limit . nil)
+        (symbol . "d")))
 
 (setq ac-source-keys-ahk
       '((candidates . (all-completions ac-prefix ahk-keys))
@@ -466,7 +474,7 @@ Launches default browser and opens the doc's url."
 ;; clear memory
 (setq ahk-commands nil)
 (setq ahk-functions nil)
-(setq ahk-keywords nil)
+;; (setq ahk-directives nil)
 (setq ahk-variables nil)
 ;; (setq ahk-keys nil)
 
@@ -525,9 +533,10 @@ Key Bindings
 
   ;; completion
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
-  (add-to-list 'ac-sources  'ac-source-ahk)
-  (add-to-list 'ac-sources  'ac-source-keys-ahk)
   (add-to-list 'ac-modes 'ahk-mode)
+  (add-to-list 'ac-sources  'ac-source-ahk)
+  (add-to-list 'ac-sources  'ac-source-directives-ahk)
+  (add-to-list 'ac-sources  'ac-source-keys-ahk)
 
   (run-mode-hooks 'ahk-mode-hook))
 
