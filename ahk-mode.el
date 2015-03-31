@@ -3,7 +3,7 @@
 ;; Copyright (C) 2015 by Rich Alesi
 
 ;; Author: Rich Alesi
-;; URL: https://github.com/ralesi/helm-pt
+;; URL: https://github.com/ralesi/ahk-mode
 ;; Version: 1.5.2
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
 
@@ -20,6 +20,11 @@
 ;; A major mode for editing AutoHotkey (AHK) script. Supports commenting,
 ;; indentation, syntax highlighting, and help lookup both localling and on
 ;; the web.
+
+;; TODO:
+;; - Commenting - provide functions for block and standard commenting
+;; - Imenu - jump to a function / label within a buffer
+;; - Movement - move between labels and functions
 
 ;;; INSTALL
 
@@ -45,51 +50,95 @@
 
 ;; version 1.5.2, 2015-03-07 improved auto complete to work with ac and company-mode
 
+;;; Code:
+
+
+
+;;; Compatibility
+(eval-and-compile
+  ;; `defvar-local' for Emacs 24.2 and below
+  (unless (fboundp 'defvar-local)
+    (defmacro defvar-local (var val &optional docstring)
+      "Define VAR as a buffer-local variable with default value VAL.
+Like `defvar' but additionally marks the variable as being automatically
+buffer-local wherever it is set."
+      (declare (debug defvar) (doc-string 3))
+      `(progn
+         (defvar ,var ,val ,docstring)
+         (make-variable-buffer-local ',var))))
+
+  ;; `setq-local' for Emacs 24.2 and below
+  (unless (fboundp 'setq-local)
+    (defmacro setq-local (var val)
+      "Set variable VAR to value VAL in current buffer."
+      `(set (make-local-variable ',var) ,val))))
+
+;;; Requirements
+
 (eval-when-compile
   (require 'font-lock)
   (require 'cl)
+  (require 'rx)
   (require 'auto-complete-config))
 
-;;; Code:
+;;; Customization
 
-(defconst ahk-mode-version "")
-(setq ahk-mode-version "1.5.2")
+(defconst ahk-mode-version "1.5.2"
+  "Version of `ahk-mode'")
 
 (defgroup ahk-mode nil
   "Major mode for editing AutoHotkey script."
   :group 'languages
-  :prefix "ahk-")
-
-(defvar ahk-mode-command-name-face 'ahk-mode-command-name-face "Face name to use for AHK command names.")
+  :prefix "ahk-"
+  :link '(url-link :tag "Github" "https://github.com/ralesi/ahk-mode")
+  :link '(emacs-commentary-link :tag "Commentary" "ahk-mode"))
 
 (defcustom ahk-mode-hook '(ahk-mode-hook-activate-filling)
   "Hook functions run by `ahk-mode'."
   :type 'hook
   :group 'ahk-mode)
 
-(defcustom ahk-indentation 2
+(defcustom ahk-indentation tab-width
   "The indentation level."
   :type 'integer
   :group 'ahk-mode)
 
-(defvar ahk-path-exe-optional nil)
+(defcustom ahk-user-path nil
+  "Use custom path to autohotkey executable"
+  :type 'string
+  :group 'ahk-mode)
 
-(defvar ahk-registry "HKEY_CLASSES_ROOT\\AutoHotkeyScript\\Shell\\Open\\Command")
+(defcustom ahk-registry "HKEY_CLASSES_ROOT\\AutoHotkeyScript\\Shell\\Open\\Command"
+  "Registry location for autohotkey install"
+  :type 'string
+  :group 'ahk-mode)
 
-(defvar ahk-path-exe-installed
+(defvar ahk-path
   (let ((reg-data (shell-command-to-string (format "reg query \"%s\"" ahk-registry))))
-    ;; from
-    ;; "C:\\Program Files (x86)\\AutoHotkey\\AutoHotkey.exe"
-    ;; to
-    ;; "C:/Program Files (x86)/AutoHotkey/AutoHotkey.exe"
-    (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\"")))))
+    (directory-file-name
+     (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\"")))))
+  "Path of installed autohotkey executable")
 
-(defvar ahk-path-exe-installed-p
-  (file-exists-p ahk-path-exe-installed))
+(defvar ahk-path-exe
+  (concat ahk-path "/AutoHothkey.exe" )
+  "Path of installed autohotkey executable")
+
+(defvar ahk-help-chm
+  (concat ahk-path "/AutoHotkey.chm")
+  "Path of installed autohotkey help file")
+
+(defvar ahk-spy-exe
+  (concat ahk-path "/AU3_Spy.exe")
+  "Path of installed autohotkey help file")
+
+(defvar ahk-installed-p
+  (file-exists-p ahk-path-exe)
+  "Predicate function to check existense of autohotkey executable")
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
 
+;;; keymap
 (defvar ahk-mode-map nil "Keymap for ahk-mode")
 (progn
   (setq ahk-mode-map (make-sparse-keymap))
@@ -97,7 +146,7 @@
   (define-key ahk-mode-map (kbd "C-c C-c") 'ahk-comment-region)
   )
 
-
+;;; menu
 (easy-menu-define ahk-menu ahk-mode-map "AHK Mode Commands"
   '("AHK"
     ["Lookup webdocs on command" ahk-lookup-ahk-ref]
@@ -114,18 +163,21 @@
         (modify-syntax-entry ?@  "w" synTable)
         ;; some additional characters used in paths and switches
         (modify-syntax-entry ?\\  "w" synTable)
-        (modify-syntax-entry ?. "." synTable)
-        (modify-syntax-entry ?: "." synTable)
-        (modify-syntax-entry ?- "." synTable)
         (modify-syntax-entry ?\;  "< b" synTable)
-        ;; for multiline comments (taken from cc-mode)
+        ;; for multiline comments
         (modify-syntax-entry ?\/  ". 14" synTable)
         (modify-syntax-entry ?*  ". 23"   synTable)
         ;; Give CR the same syntax as newline, for selective-display
         (modify-syntax-entry ?\^m "> b" synTable)
         (modify-syntax-entry ?\n "> b"  synTable)
         ;; ` is escape
-        (modify-syntax-entry ?` "\\" synTable) 
+        (modify-syntax-entry ?` "\\" synTable)
+        ;; allow single quoted strings
+        (modify-syntax-entry ?' "\"" synTable)
+        ;; the rest is
+        (modify-syntax-entry ?. "." synTable)
+        (modify-syntax-entry ?: "." synTable)
+        (modify-syntax-entry ?- "." synTable)
         (modify-syntax-entry ?! "." synTable)
         (modify-syntax-entry ?$ "." synTable)
         (modify-syntax-entry ?% "." synTable)
@@ -137,10 +189,7 @@
         (modify-syntax-entry ?< "." synTable)
         (modify-syntax-entry ?> "." synTable)
         (modify-syntax-entry ?, "." synTable)
-        ;; single quote strings
-        (modify-syntax-entry ?' "\"" synTable)
-        synTable)
-      )
+        synTable))
 
 ;;; functions
 
@@ -148,12 +197,12 @@
   (interactive)
   (let*
       ((file (shell-quote-argument (buffer-file-name)))
-       (optional-ahk-exe (and (stringp ahk-path-exe-optional)
-                              (file-exists-p ahk-path-exe-optional)))
+       (optional-ahk-exe (and (stringp ahk-user-path)
+                              (file-exists-p ahk-user-path)))
        (ahk-exe-path (shell-quote-argument (if optional-ahk-exe
-                                               ahk-path-exe-optional
-                                             ahk-path-exe-installed))))
-    (if (and (stringp ahk-path-exe-optional)
+                                               ahk-user-path
+                                             ahk-path-exe))))
+    (if (and (stringp ahk-user-path)
              (not optional-ahk-exe))
         (error "Error: optional-ahk-exe is not found.")
       (save-window-excursion
@@ -177,7 +226,9 @@ Launches default browser and opens the doc's url."
 
 (defun ahk-mode-hook-activate-filling ()
   "Activates `auto-fill-mode' and truncates lines."
-  (auto-fill-mode 1))
+  (progn
+    (toggle-truncate-lines t)
+    (auto-fill-mode 1)))
 
 ;;;; indentation
 (defun ahk-calc-indention (str &optional offset)
