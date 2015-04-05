@@ -4,7 +4,7 @@
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
-;; Version: 1.5.2
+;; Version: 1.5.3
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
 
 ;; Based on work from
@@ -49,6 +49,7 @@
 ;;; HISTORY
 
 ;; version 1.5.2, 2015-03-07 improved auto complete to work with ac and company-mode
+;; version 1.5.3, 2015-04-05 improved commenting and added imenu options
 
 ;;; Code:
 
@@ -78,12 +79,14 @@ buffer-local wherever it is set."
 (eval-when-compile
   (require 'font-lock)
   (require 'cl)
+  (require 'thingatpt )
   (require 'rx)
-  (require 'auto-complete-config))
+  (if (fboundp 'auto-complete)
+      (require 'auto-complete-config)))
 
 ;;; Customization
 
-(defconst ahk-mode-version "1.5.2"
+(defconst ahk-mode-version "1.5.3"
   "Version of `ahk-mode'")
 
 (defgroup ahk-mode nil
@@ -115,23 +118,23 @@ buffer-local wherever it is set."
 
 (defvar ahk-path
   (let ((reg-data (shell-command-to-string (format "reg query \"%s\"" ahk-registry))))
-    (directory-file-name
-     (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\"")))))
+    (file-name-directory
+                          (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\"")))))
   "Path of installed autohotkey executable")
 
 (defvar ahk-path-exe
-  (concat ahk-path "/AutoHothkey.exe" )
+  (concat ahk-path "AutoHothkey.exe" )
   "Path of installed autohotkey executable")
 
 (defvar ahk-help-chm
-  (concat ahk-path "/AutoHotkey.chm")
+  (concat ahk-path "AutoHotkey.chm")
   "Path of installed autohotkey help file")
 
 (defvar ahk-spy-exe
-  (concat ahk-path "/AU3_Spy.exe")
+  (concat ahk-path "AU3_Spy.exe")
   "Path of installed autohotkey help file")
 
-(defvar ahk-installed-p
+(defun ahk-installed-p ()
   (file-exists-p ahk-path-exe)
   "Predicate function to check existense of autohotkey executable")
 
@@ -139,18 +142,24 @@ buffer-local wherever it is set."
 (add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
 
 ;;; keymap
-(defvar ahk-mode-map nil "Keymap for ahk-mode")
-(progn
-  (setq ahk-mode-map (make-sparse-keymap))
-  (define-key ahk-mode-map (kbd "C-c C-r") 'ahk-lookup-ahk-ref)
-  (define-key ahk-mode-map (kbd "C-c C-c") 'ahk-comment-region)
-  )
+(defvar ahk-mode-map 
+  (let ((map (make-sparse-keymap)))
+    ;; key bindings
+    (define-key map (kbd "C-c C-r") 'ahk-lookup-chm)
+    (define-key map (kbd "C-c C-?") 'ahk-lookup-web)
+    (define-key map (kbd "C-c C-c") 'ahk-comment-dwim)
+    (define-key map (kbd "C-c C-b") 'ahk-comment-block-dwim)
+    map)
+  "Keymap for Autohotkey major mode.")
 
 ;;; menu
-(easy-menu-define ahk-menu ahk-mode-map "AHK Mode Commands"
+(easy-menu-define ahk-menu ahk-mode-map
+  "AHK Mode Commands"
   '("AHK"
-    ["Lookup webdocs on command" ahk-lookup-ahk-ref]
-    ["Execute script" run-this-ahk-script]))
+    ["Lookup webdocs on command" ahk-lookup-web]
+    ["Execute script" ahk-run-script]
+    "---"
+    ["Version" ahk-version]))
 
 ;;; syntax table
 (defvar ahk-mode-syntax-table nil "Syntax table for `ahk-mode'.")
@@ -167,33 +176,40 @@ buffer-local wherever it is set."
         ;; for multiline comments
         (modify-syntax-entry ?\/  ". 14" synTable)
         (modify-syntax-entry ?*  ". 23"   synTable)
-        ;; Give CR the same syntax as newline, for selective-display
-        (modify-syntax-entry ?\^m "> b" synTable)
+        ;; New line
         (modify-syntax-entry ?\n "> b"  synTable)
         ;; ` is escape
         (modify-syntax-entry ?` "\\" synTable)
         ;; allow single quoted strings
         (modify-syntax-entry ?' "\"" synTable)
         ;; the rest is
-        (modify-syntax-entry ?. "." synTable)
-        (modify-syntax-entry ?: "." synTable)
-        (modify-syntax-entry ?- "." synTable)
-        (modify-syntax-entry ?! "." synTable)
-        (modify-syntax-entry ?$ "." synTable)
-        (modify-syntax-entry ?% "." synTable)
-        (modify-syntax-entry ?^ "." synTable)
-        (modify-syntax-entry ?& "." synTable)
-        (modify-syntax-entry ?~ "." synTable)
-        (modify-syntax-entry ?| "." synTable)
-        (modify-syntax-entry ?? "." synTable)
-        (modify-syntax-entry ?< "." synTable)
-        (modify-syntax-entry ?> "." synTable)
-        (modify-syntax-entry ?, "." synTable)
+        ;; (modify-syntax-entry ?. "." synTable)
+        ;; (modify-syntax-entry ?: "." synTable)
+        ;; (modify-syntax-entry ?- "." synTable)
+        ;; (modify-syntax-entry ?! "." synTable)
+        ;; (modify-syntax-entry ?$ "." synTable)
+        ;; (modify-syntax-entry ?% "." synTable)
+        ;; (modify-syntax-entry ?^ "." synTable)
+        ;; (modify-syntax-entry ?& "." synTable)
+        ;; (modify-syntax-entry ?~ "." synTable)
+        ;; (modify-syntax-entry ?| "." synTable)
+        ;; (modify-syntax-entry ?? "." synTable)
+        ;; (modify-syntax-entry ?< "." synTable)
+        ;; (modify-syntax-entry ?> "." synTable)
+        ;; (modify-syntax-entry ?, "." synTable)
         synTable))
 
-;;; functions
+;;; imenu support
 
-(defun run-this-ahk-script ()
+(defconst ahk-imenu-generic-expression
+  '(("Keybindings" "^\s*\\(.+?\\)::" 1)
+    ("Labels"      "^\s*\\([A-Za-z0-9^:]+\\):\n" 1)
+    ("Functions"   "^\s*\\(.*\\)(.*)[\n]{" 1)
+    ("Comments"    "^; \\(.+\\)" 1))
+  "imenu index for `ahk-mode'")
+
+(defun ahk-run-script ()
+  "Run ahk-script"
   (interactive)
   (let*
       ((file (shell-quote-argument (buffer-file-name)))
@@ -208,27 +224,48 @@ buffer-local wherever it is set."
       (save-window-excursion
         (async-shell-command (format "%s %s" ahk-exe-path file))))))
 
-(defun ahk-lookup-ahk-ref ()
+(defun ahk-command-at-point ()
+  "Determine command at point, and prompt if nothing found"
+  (let ((myword (or  (if (region-active-p)
+                         (buffer-substring-no-properties
+                          (region-beginning)
+                          (region-end))
+                       (thing-at-point 'symbol))
+                     (read-string "Command: "))))
+    myword))
+
+(defun ahk-lookup-web ()
   "Look up current word in AutoHotkey's reference doc.
-If a there is a text selection (a phrase), lookup that phrase.
 Launches default browser and opens the doc's url."
   (interactive)
-  (let (myword myurl)
-    (setq myword
-          (if (region-active-p)
-              (buffer-substring-no-properties (region-beginning) (region-end))
-            (thing-at-point 'symbol)))
-    
-    (setq myword (replace-regexp-in-string " " "%20" myword))
-    (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
-    (browse-url myurl)
-    ))
+  (let* ((acap (ahk-command-at-point))
+         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm" )))
+    ;; v1
+    ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
+    ;; v2
+    (browse-url myurl)))
+
+(defun ahk-lookup-chm ()
+  "Look up current word in AutoHotkey's reference doc.
+Launches autohotkey help in chm file."
+  (interactive)
+  (let* ((acap (ahk-command-at-point))
+         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm" )))
+    ;; v1
+    ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
+    ;; v2
+    (browse-url myurl)))
 
 (defun ahk-mode-hook-activate-filling ()
   "Activates `auto-fill-mode' and truncates lines."
   (progn
-    (toggle-truncate-lines t)
+    (setq truncate-lines nil)
     (auto-fill-mode 1)))
+
+(defun ahk-version ()
+  "Show the `ahk-mode' version in the echo area."
+  (interactive)
+  (message (concat "ahk-mode version " ahk-mode-version)))
 
 ;;;; indentation
 (defun ahk-calc-indention (str &optional offset)
@@ -381,36 +418,25 @@ Launches default browser and opens the doc's url."
     (set-marker end nil)))
 
 ;;;; commenting
-(defun ahk-comment-region (start end &optional arg)
-  "Comment or uncomment entire block"
-  (interactive (if (region-active-p)
-                   (list 
-                    (region-end)
-                    current-prefix-arg)
-                 (let (start end)
-                   (beginning-of-line)
-                   (setq start (point))
-                   (forward-line)
-                   (setq end (point))
-                   (list start end current-prefix-arg))))
-  (save-excursion
-    (comment-region start end arg)))
 
-(defun ahk-comment-block (start end &optional arg)
-  "Comment or uncomment entire block"
-  (interactive (if (region-active-p)
-                   (list 
-                    (region-end)
-                    current-prefix-arg)
-                 (let (start end)
-                   (beginning-of-line)
-                   (setq start (point))
-                   (forward-line)
-                   (setq end (point))
-                   (list start end current-prefix-arg))))
-  (comment-dwim)
-  (save-excursion
-    (comment-region start end arg)))
+(defun ahk-comment-dwim (arg)
+  "Comment or uncomment current line or region in a smart way.
+For details, see `comment-dwim'."
+  (interactive "*P")
+  (require 'newcomment)
+  (let ((comment-start ";")
+        (comment-end ""))
+    (comment-dwim arg)))
+
+(defun ahk-comment-block-dwim (arg)
+  "Comment or uncomment current line or region using block notation.
+For details, see `comment-dwim'."
+  (interactive "*P")
+  (require 'newcomment)
+  (let ((comment-style 'extra-line)
+        (comment-start "/*")
+        (comment-end "*/"))
+    (comment-dwim arg)))
 
 ;;; font-lock
 
@@ -456,6 +482,7 @@ Launches default browser and opens the doc's url."
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
       `(
+        ;; comments
         ("\\s-*;.*$"                       . font-lock-comment-face)
         ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?"  . font-lock-comment-face)
         ("^\\([^ \t\n:^=]+\\):"            . (1 font-lock-builtin-face))
@@ -549,6 +576,9 @@ Key Bindings
   ;; ui
   (use-local-map ahk-mode-map)
   (easy-menu-add ahk-menu)
+
+  ;; imenu
+  (setq-local imenu-generic-expression ahk-imenu-generic-expression)
 
   ;; font-lock
   (make-local-variable 'font-lock-defaults)
