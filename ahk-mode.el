@@ -142,7 +142,7 @@ buffer-local wherever it is set."
 (add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
 
 ;;; keymap
-(defvar ahk-mode-map 
+(defvar ahk-mode-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
     (define-key map (kbd "C-c C-r") 'ahk-lookup-chm)
@@ -563,7 +563,6 @@ The hook functions in `ahk-mode-hook' are run after mode initialization.
 
 Key Bindings
 \\{ahk-mode-map}"
-
   (interactive)
   (kill-all-local-variables)
 
@@ -587,7 +586,6 @@ Key Bindings
   ;; clear memory
   (setq ahk-commands-regexp nil)
   (setq ahk-functions-regexp nil)
-  (setq ahk-keywords-regexp nil)
   (setq ahk-variables-regexp nil)
   (setq ahk-keys-regexp nil)
 
@@ -614,10 +612,13 @@ Key Bindings
 
   ;; completion
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
-  (add-to-list 'ac-modes 'ahk-mode)
-  (add-to-list 'ac-sources  'ac-source-ahk)
-  (add-to-list 'ac-sources  'ac-source-directives-ahk)
-  (add-to-list 'ac-sources  'ac-source-keys-ahk)
+
+  ;; add to auto-complete sources if ac is loaded
+  (if (listp 'ac-modes)
+      (add-to-list 'ac-modes 'ahk-mode)
+    (add-to-list 'ac-sources  'ac-source-ahk)
+    (add-to-list 'ac-sources  'ac-source-directives-ahk)
+    (add-to-list 'ac-sources  'ac-source-keys-ahk))
 
   (run-mode-hooks 'ahk-mode-hook))
 
