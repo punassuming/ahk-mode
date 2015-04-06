@@ -210,9 +210,9 @@ buffer-local wherever it is set."
 ;;; imenu support
 
 (defconst ahk-imenu-generic-expression
-  '(("Keybindings" "^\s*\\(.+?\\)::" 1)
+  '(("Functions"   "^\s*\\(.*\\)(.*)[\n]{" 1)
     ("Labels"      "^\s*\\([A-Za-z0-9^:]+\\):\n" 1)
-    ("Functions"   "^\s*\\(.*\\)(.*)[\n]{" 1)
+    ("Keybindings" "^\s*\\(.+?\\)::" 1)
     ("Comments"    "^; \\(.+\\)" 1))
   "imenu index for `ahk-mode'")
 
@@ -584,6 +584,7 @@ Key Bindings
 
   ;; imenu
   (setq-local imenu-generic-expression ahk-imenu-generic-expression)
+  (setq-local imenu-sort-function 'imenu--sort-by-position)
 
   ;; font-lock
   (make-local-variable 'font-lock-defaults)
