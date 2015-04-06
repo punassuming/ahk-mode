@@ -20,11 +20,18 @@
 ;; A major mode for editing AutoHotkey (AHK) script. Supports commenting,
 ;; indentation, syntax highlighting, and help lookup both localling and on
 ;; the web.
-
-;; TODO:
+;; Features
 ;; - Commenting - provide functions for block and standard commenting
 ;; - Imenu - jump to a function / label within a buffer
+;; - Execute scripts
+;; - Auto complete - adds options for `company-mode' and `auto-complete-mode'
+
+;; TODO:
 ;; - Movement - move between labels and functions
+;; - Indentation - indent based on current style in ahk-chm
+;; - Lookup reference - both on the web and through the installed CHM file
+;; - Execute scripts - support redirects of error to stdout
+;; - Debugging features
 
 ;;; INSTALL
 
@@ -43,7 +50,7 @@
 
 ;; When opening a script file you will get:
 ;; - syntax highlighting
-;; - indention and command help
+;; - indentation and command help
 ;; - autocomplete and company support
 
 ;;; HISTORY
@@ -147,6 +154,7 @@ buffer-local wherever it is set."
     ;; key bindings
     (define-key map (kbd "C-c C-r") 'ahk-lookup-chm)
     (define-key map (kbd "C-c C-?") 'ahk-lookup-web)
+    (define-key map (kbd "C-c i") 'ahk-indent-message)
     (define-key map (kbd "C-c C-c") 'ahk-comment-dwim)
     (define-key map (kbd "C-c C-b") 'ahk-comment-block-dwim)
     map)
@@ -224,7 +232,7 @@ buffer-local wherever it is set."
       (save-window-excursion
         (async-shell-command (format "%s %s" ahk-exe-path file))))))
 
-(defun ahk-command-at-point ()
+(defun ahk-command-prompt ()
   "Determine command at point, and prompt if nothing found"
   (let ((myword (or  (if (region-active-p)
                          (buffer-substring-no-properties
@@ -238,18 +246,16 @@ buffer-local wherever it is set."
   "Look up current word in AutoHotkey's reference doc.
 Launches default browser and opens the doc's url."
   (interactive)
-  (let* ((acap (ahk-command-at-point))
-         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm" )))
-    ;; v1
-    ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
-    ;; v2
-    (browse-url myurl)))
+  (let* ((acap (ahk-command-prompt))
+         (myurl2 (concat "http://ahkscript.org/docs/commands/" acap ".htm" ))
+         (myurl1 (concat "http://www.autohotkey.com/docs/commands/" acap ".htm" )))
+    (browse-url myurl2)))
 
 (defun ahk-lookup-chm ()
   "Look up current word in AutoHotkey's reference doc.
 Launches autohotkey help in chm file."
   (interactive)
-  (let* ((acap (ahk-command-at-point))
+  (let* ((acap (ahk-command-prompt))
          (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm" )))
     ;; v1
     ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
@@ -268,7 +274,7 @@ Launches autohotkey help in chm file."
   (message (concat "ahk-mode version " ahk-mode-version)))
 
 ;;;; indentation
-(defun ahk-calc-indention (str &optional offset)
+(defun ahk-calc-indentation (str &optional offset)
   (let ((i (* (or offset 0) ahk-indentation)))
     (while (string-match "\t" str)
       (setq i (+ i tab-width)
@@ -280,7 +286,7 @@ Launches autohotkey help in chm file."
 ;; i.e. it matches one line statements but should not match those where the THEN resp.
 ;; ELSE body is on its own line ...
 (defvar ahk-one-line-if-regexp
-  (concat "^\\([ \t]*\\)" ;; this is used for indention
+  (concat "^\\([ \t]*\\)" ;; this is used for indentation
           "\\("
           "If\\(Not\\)?\\("
           (regexp-opt '("InString" "InStr"
@@ -304,7 +310,7 @@ Launches autohotkey help in chm file."
 
 (defun ahk-indent-message ()
   (interactive)
-  (message (format "%s" (ahk-previous-indent))))
+  (message (format "%s" (ahk-calc-indentation))))
 
 (defun ahk-indent-line ()
   "Indent the current line."
@@ -315,7 +321,7 @@ Launches autohotkey help in chm file."
         (closing-brace)
         (block-skip nil)
         (case-fold-search t))
-    ;; do a backward search to determine the indention level
+    ;; do a backward search to determine the indentation level
     (save-excursion
       (beginning-of-line)
 
@@ -347,17 +353,17 @@ Launches autohotkey help in chm file."
               (setq indent 0))
           ;; is it an opening { or (
           (if (looking-at "^\\([ \t]*\\)[{(]")
-              (setq indent (ahk-calc-indention (match-string 1) 1))
+              (setq indent (ahk-calc-indentation (match-string 1) 1))
             ;; is it a Return at the first level?
             (if (and (looking-at "^\\([ \t]*\\)[rR]eturn")
-                     (= (ahk-calc-indention (match-string 1)) ahk-indentation))
-                (setq indent (ahk-calc-indention (match-string 1) -1))
+                     (= (ahk-calc-indentation (match-string 1)) ahk-indentation))
+                (setq indent (ahk-calc-indentation (match-string 1) -1))
               ;; If/Else with body on next line, but not opening { or (
               (if (and (not opening-brace)
                        (not block-skip)
                        (looking-at "^\\([ \t]*\\)\\(If\\|Else\\)")
                        (not (looking-at ahk-one-line-if-regexp)))
-                  (setq indent (ahk-calc-indention (match-string 1) 1))
+                  (setq indent (ahk-calc-indentation (match-string 1) 1))
                 ;; two lines back was a If/Else thus indent like it
                 (if (and (not opening-brace)
                          ;; (not else)
@@ -369,7 +375,7 @@ Launches autohotkey help in chm file."
                            ;; backtrace nested Ifs
                            (while (and (looking-at "^\\([ \t]*\\)\\(If\\|Else\\)")
                                        (not (looking-at ahk-one-line-if-regexp)))
-                             (setq indent (ahk-calc-indention (match-string 1)))
+                             (setq indent (ahk-calc-indentation (match-string 1)))
                              (beginning-of-line)
                              (skip-chars-backward " \r\t\n")
                              (beginning-of-line))
@@ -377,7 +383,7 @@ Launches autohotkey help in chm file."
                     (setq indent indent)
                   ;; the last resort, indent as the last line
                   (if (looking-at "^\\([ \t]*\\)")
-                      (setq indent (ahk-calc-indention (match-string 1)))))))))))
+                      (setq indent (ahk-calc-indentation (match-string 1)))))))))))
     ;; check for special tokens
     (save-excursion
       (beginning-of-line)
@@ -387,7 +393,7 @@ Launches autohotkey help in chm file."
                 (looking-at "^;;;"))
             (setq indent 0))))
 
-    ;; set negative indention to 0
+    ;; set negative indentation to 0
     (if (< indent 0)
         (setq indent 0))
 
