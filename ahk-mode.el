@@ -164,8 +164,9 @@ buffer-local wherever it is set."
   "Path of installed autohotkey help file")
 
 (defun ahk-installed-p ()
+  "Predicate function to check existense of autohotkey executable"
   (file-exists-p ahk-path-exe)
-  "Predicate function to check existense of autohotkey executable")
+  )
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
@@ -299,6 +300,7 @@ Launches autohotkey help in chm file."
 (defun ahk-calc-indentation (str &optional offset)
   (let ((i (* (or offset 0) ahk-indentation)))
     (while (string-match "\t" str)
+  "Calculate the current indentation level of argument"
       (setq i (+ i tab-width)
             str (replace-match "" nil t str)))
     (setq i (+ i (length str)))
@@ -331,8 +333,9 @@ Launches autohotkey help in chm file."
     (current-indentation)))
 
 (defun ahk-indent-message ()
+  "Show message for current indentation level"
   (interactive)
-  (message (format "%s" (ahk-calc-indentation))))
+  (message (format "%s" (current-indentation))))
 
 (defun ahk-indent-line ()
   "Indent the current line."
@@ -346,7 +349,6 @@ Launches autohotkey help in chm file."
     ;; do a backward search to determine the indentation level
     (save-excursion
       (beginning-of-line)
-
       ;; if beginning with a comment, indent based on previous line
       (if (looking-at "^\\([ \t*]\\);")
           (setq indent (ahk-previous-indent))
