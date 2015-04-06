@@ -33,6 +33,28 @@
 ;; - Execute scripts - support redirects of error to stdout
 ;; - Debugging features
 
+;; Notes on indentation
+;; Indentation is styled with bracing on current line of if / else statements
+;; or on empty next line.
+
+;; Block types that can affect indentation
+;; comments - ; AAA
+;; - previous block beginning brace = +0
+;; - indentation level is skipped when determining position for current line
+;; function - AAA(.*) { ... } = +1
+;; function - AAA(.*) { } = +0 ... } = +1
+;; label - AAA: = 0
+;; Keybindings (next line) AAA:: = +1
+;; Keybindings (current line) AAA:: =+0
+;; Open block {( +1 on next
+;; Close block {( -1 on current
+;; Class AAA.* { ... } = +1
+;; #if[WinActive] (.*)\n = +1 
+;; #if[WinActive]$ = -1
+;; [Rr]eturn = -1
+;; for .*\n { .. } = +1
+;; loop .*\n { .. } = +1
+
 ;;; INSTALL
 
 ;; Open the file, then type “Alt+x eval-buffer”. You are done. Open
@@ -556,10 +578,10 @@ For details, see `comment-dwim'."
         (symbol . "k")))
 
 ;; clear memory
-(setq ahk-commands nil)
-(setq ahk-functions nil)
+;; (setq ahk-commands nil)
+;; (setq ahk-functions nil)
 ;; (setq ahk-directives nil)
-(setq ahk-variables nil)
+;; (setq ahk-variables nil)
 ;; (setq ahk-keys nil)
 
 (define-derived-mode ahk-mode prog-mode "Autohotkey Mode"
@@ -591,10 +613,10 @@ Key Bindings
   (setq font-lock-defaults '((ahk-font-lock-keywords) nil t))
 
   ;; clear memory
-  (setq ahk-commands-regexp nil)
-  (setq ahk-functions-regexp nil)
-  (setq ahk-variables-regexp nil)
-  (setq ahk-keys-regexp nil)
+  ;; (setq ahk-commands-regexp nil)
+  ;; (setq ahk-functions-regexp nil)
+  ;; (setq ahk-variables-regexp nil)
+  ;; (setq ahk-keys-regexp nil)
 
   (setq-local comment-start ";")
   (setq-local comment-end   "")
