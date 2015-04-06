@@ -489,15 +489,7 @@ For details, see `comment-dwim'."
   "AHK keywords for keys.")
 
 (defvar ahk-operators
-  '(","
-    "\\\\"
-    "\\^=" "\\!=" "&&" "&="
-    "\\*\\*" "\\*=" "\\*" "//" "//=" "/=" "/"
-    "\\+\\+" "\\+=" "\\+" "--" "-=" "-"
-    "\\.=" ":=" ":"
-    "<<" "<<=" "<=" "<" "==" "=" ">=" ">>" ">>=" ">"
-    "\\?"
-    )
+  '("!" "!=" "&" "&&	" "&=" "*	" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." ".	" ".=" "/" "//	" "//=" "/=" ":=" "<" "<<" "<<=	" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" "AND" "NOT" "OR" "^" "^=" "|" "|=" "||" "~" "~=" ",")
   "AHK operators.")
 
 (defvar ahk-commands-regexp (regexp-opt ahk-commands 'words))
@@ -505,22 +497,23 @@ For details, see `comment-dwim'."
 (defvar ahk-directives-regexp (regexp-opt ahk-directives 'words))
 (defvar ahk-variables-regexp (regexp-opt ahk-variables 'words))
 (defvar ahk-keys-regexp (regexp-opt ahk-keys 'words))
-(defvar ahk-operators-regexp (regexp-opt ahk-operators 'words))
+(defvar ahk-operators-regexp (regexp-opt ahk-operators))
 
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
       `(
-        ;; comments
-        ("\\s-*;.*$"                       . font-lock-comment-face)
-        ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?"  . font-lock-comment-face)
-        ("^\\([^ \t\n:^=]+\\):"            . (1 font-lock-builtin-face))
+        ;; keybindings
+        ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
+        ;; labels
+        ("^\\([^\t\n: ^=]+\\):"            . (1 font-lock-builtin-face))
+        ;; variables
         ("%[^% ]+%"                        . font-lock-variable-name-face)
-        (,ahk-commands-regexp              . font-lock-type-face)
+        (,ahk-commands-regexp              . font-lock-regexp-grouping-backslash)
         (,ahk-functions-regexp             . font-lock-function-name-face)
-        (,ahk-directives-regexp              . font-lock-keyword-face)
+        (,ahk-directives-regexp            . font-lock-keyword-face)
         (,ahk-variables-regexp             . font-lock-variable-name-face)
         (,ahk-keys-regexp                  . font-lock-constant-face)
-        (,ahk-operators-regexp             . font-lock-warning-face)
+        (,ahk-operators-regexp             . font-lock-type-face)
         ;; note: order matters
         ))
 
