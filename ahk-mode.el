@@ -4,7 +4,7 @@
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
-;; Version: 1.5.3
+;; Version: 1.5.4
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
 
 ;; Based on work from
@@ -20,40 +20,6 @@
 ;; A major mode for editing AutoHotkey (AHK) script. Supports commenting,
 ;; indentation, syntax highlighting, and help lookup both localling and on
 ;; the web.
-;; Features
-;; - Commenting - provide functions for block and standard commenting
-;; - Imenu - jump to a function / label within a buffer
-;; - Execute scripts
-;; - Auto complete - adds options for `company-mode' and `auto-complete-mode'
-
-;; TODO:
-;; - Movement - move between labels and functions
-;; - Indentation - indent based on current style in ahk-chm
-;; - Lookup reference - both on the web and through the installed CHM file
-;; - Execute scripts - support redirects of error to stdout
-;; - Debugging features
-
-;; Notes on indentation
-;; Indentation is styled with bracing on current line of if / else statements
-;; or on empty next line.
-
-;; Block types that can affect indentation
-;; comments - ; AAA
-;; - previous block beginning brace = +0
-;; - indentation level is skipped when determining position for current line
-;; function - AAA(.*) { ... } = +1
-;; function - AAA(.*) { } = +0 ... } = +1
-;; label - AAA: = 0
-;; Keybindings (next line) AAA:: = +1
-;; Keybindings (current line) AAA:: =+0
-;; Open block {( +1 on next
-;; Close block {( -1 on current
-;; Class AAA.* { ... } = +1
-;; #if[WinActive] (.*)\n = +1 
-;; #if[WinActive]$ = -1
-;; [Rr]eturn = -1
-;; for .*\n { .. } = +1
-;; loop .*\n { .. } = +1
 
 ;;; INSTALL
 
@@ -72,13 +38,46 @@
 
 ;; When opening a script file you will get:
 ;; - syntax highlighting
-;; - indentation and command help
-;; - autocomplete and company support
+;; - Commenting - provide functions for block and standard commenting
+;; - Imenu - jump to a function / label within a buffer
+;; - Execute scripts
+;; - Auto complete - adds options for `company-mode' and `auto-complete-mode'
+
+;; TODO:
+;; - Movement - move between labels and functions
+;; - Indentation - indent based on current style in ahk-chm
+;; - Lookup reference - both on the web and through the installed CHM file
+;; - Execute scripts - support redirects of error to stdout
+;; - Debugging features
+;; - yasnippets
+
+;; Notes on indentation
+;; Indentation is styled with bracing on current line of if / else statements
+;; or on empty next line.
+
+;; Block types that can affect indentation
+;; comments - ; AAA
+;; - previous block beginning brace = +0
+;; - indentation level is skipped when determining position for current line
+;; function - AAA(.*) { ... } = +1
+;; function - AAA(.*) { } = +0 ... } = +1
+;; label - AAA: = 0
+;; Keybindings (next line) AAA:: = +1
+;; Keybindings (current line) AAA:: =+0
+;; Open block {( +1 on next
+;; Close block {( -1 on current
+;; Class AAA.* { ... } = +1
+;; #if[WinActive] (.*)\n = +1
+;; #if[WinActive]$ = -1
+;; [Rr]eturn = -1
+;; for .*\n { .. } = +1
+;; loop .*\n { .. } = +1
 
 ;;; HISTORY
 
 ;; version 1.5.2, 2015-03-07 improved auto complete to work with ac and company-mode
 ;; version 1.5.3, 2015-04-05 improved commenting and added imenu options
+;; version 1.5.4, 2015-04-06 indentation is working, with bugs
 
 ;;; Code:
 
@@ -115,7 +114,7 @@ buffer-local wherever it is set."
 
 ;;; Customization
 
-(defconst ahk-mode-version "1.5.3"
+(defconst ahk-mode-version "1.5.4"
   "Version of `ahk-mode'")
 
 (defgroup ahk-mode nil
