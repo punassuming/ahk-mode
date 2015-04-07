@@ -298,9 +298,9 @@ Launches autohotkey help in chm file."
 
 ;;;; indentation
 (defun ahk-calc-indentation (str &optional offset)
+  "Calculate the current indentation level of argument"
   (let ((i (* (or offset 0) ahk-indentation)))
     (while (string-match "\t" str)
-  "Calculate the current indentation level of argument"
       (setq i (+ i tab-width)
             str (replace-match "" nil t str)))
     (setq i (+ i (length str)))
@@ -343,96 +343,83 @@ Launches autohotkey help in chm file."
   (let ((indent 0)
         (opening-brace nil)
         (else nil)
-        (closing-brace)
+        (closing-brace nil)
         (block-skip nil)
         (case-fold-search t))
     ;; do a backward search to determine the indentation level
     (save-excursion
       (beginning-of-line)
-      ;; if beginning with a comment, indent based on previous line
-      (if (looking-at "^\\([ \t*]\\);")
-          (setq indent (ahk-previous-indent))
-        ;; save type of current line
-        (setq opening-brace (looking-at "^\\([ \t]*\\)[{(]"))
-        (setq else          (looking-at "^\\([ \t]*\\)Else[ \r\n]"))
-        (setq closing-brace (looking-at "^\\([ \t]*\\)[)}]"))
-        ;; check previous non-empty line
-        (skip-chars-backward " \r\t\n")
-        (beginning-of-line)
-        (when (looking-at "^\\([ \t]*\\)[)}]")
-          (goto-char (match-end 0))
-          (backward-list)
-          (skip-chars-backward " \r\t\n")
-          (beginning-of-line)
-          (setq block-skip t))
-        ;; skip commented lines backward
-        (while (and (looking-at "^;") (not (bobp)))
-          (forward-line -1))
-        ;; is it a label
-        (if (looking-at "^[^: \n]+:")
-            (if (and (not opening-brace)
-                     (not block-skip)
-                     (looking-at "^[^: ]+:\\([^:\n]*:\\)?[ \t]*$"))
-                (setq indent ahk-indentation)
-              (setq indent 0))
-          ;; is it an opening { or (
-          (if (looking-at "^\\([ \t]*\\)[{(]")
-              (setq indent (ahk-calc-indentation (match-string 1) 1))
-            ;; is it a Return at the first level?
-            (if (and (looking-at "^\\([ \t]*\\)[rR]eturn")
-                     (= (ahk-calc-indentation (match-string 1)) ahk-indentation))
-                (setq indent (ahk-calc-indentation (match-string 1) -1))
-              ;; If/Else with body on next line, but not opening { or (
-              (if (and (not opening-brace)
-                       (not block-skip)
-                       (looking-at "^\\([ \t]*\\)\\(If\\|Else\\)")
-                       (not (looking-at ahk-one-line-if-regexp)))
-                  (setq indent (ahk-calc-indentation (match-string 1) 1))
-                ;; two lines back was a If/Else thus indent like it
-                (if (and (not opening-brace)
-                         ;; (not else)
-                         (save-excursion
-                           (beginning-of-line)
-                           (skip-chars-backward " \r\t\n")
-                           (beginning-of-line)
-                           (setq indent nil)
-                           ;; backtrace nested Ifs
-                           (while (and (looking-at "^\\([ \t]*\\)\\(If\\|Else\\)")
-                                       (not (looking-at ahk-one-line-if-regexp)))
-                             (setq indent (ahk-calc-indentation (match-string 1)))
-                             (beginning-of-line)
-                             (skip-chars-backward " \r\t\n")
-                             (beginning-of-line))
-                           indent))
-                    (setq indent indent)
-                  ;; the last resort, indent as the last line
-                  (if (looking-at "^\\([ \t]*\\)")
-                      (setq indent (ahk-calc-indentation (match-string 1)))))))))))
-    ;; check for special tokens
-    (save-excursion
-      (beginning-of-line)
-      (if (looking-at "^\\([ \t]*\\)[})]")
-          (setq indent (- indent ahk-indentation))
-        (if (or (looking-at "^[ \t]*[^,: \t\n]*:")
-                (looking-at "^;;;"))
-            (setq indent 0))))
+      ;; save type of current line
+      (setq opening-brace (looking-at "^[ \t]*[{(]$"))
+      (setq else          (looking-at "^[ \t]*[eE]lse[ \r\n]"))
+      (setq closing-brace (looking-at "^[ \t]*[)}]$"))
 
+      ;; skip previous empty lines and commented lines
+      (while (and
+              (or (looking-at "^[ \t]*$") (looking-at "^;"))
+              (not (bobp)))
+        (forward-line -1))
+      ;; we are now at the previous non-empty /non comment line
+      (beginning-of-line)
+      ;; if at end of brace, go to beginning
+      ;; (when (looking-at "^\\([ \t]*\\)[)}]")
+      ;;   (goto-char (match-end 0))
+      ;;   (backward-list)
+      ;;   (skip-chars-backward " \r\t\n")
+      ;;   (beginning-of-line)
+      ;;   (setq block-skip t))
+      ;; skip commented lines backward
+      (setq indent (ahk-previous-indent))
+      (cond
+       ;; if beginning with a comment, indent based on previous line
+       ((looking-at "^\\([ \t*]\\);")
+        (setq indent (ahk-previous-indent)))
+       ;; label
+       ((looking-at "^[^: \n]+:") 
+        (if (and (not opening-brace)
+                 (not block-skip)
+                 (looking-at "^[^: ]+:\\([^:\n]*:\\)?[ \t]*$"))
+            (setq indent ahk-indentation)
+          (setq indent 0)))
+       ;; opening brace
+       ((looking-at "^\\([ \t]*\\)[{(]")
+        (setq indent (ahk-calc-indentation (match-string 1) 1)))
+       ;; return
+       ((and (looking-at "^\\([ \t]*\\)[rR]eturn")
+             (= (ahk-calc-indentation (match-string 1)) ahk-indentation))
+        (setq indent (ahk-calc-indentation (match-string 1) -1)))
+       ;; If/Else with body on next line, but not opening { or (
+       ((and (not opening-brace)
+             (not block-skip)
+             (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)")
+             (not (looking-at ahk-one-line-if-regexp)))
+        (setq indent (ahk-calc-indentation (match-string 1) 1)))
+       ;; two lines back was a If/Else thus indent like it
+       ;; the last resort, indent as the last line
+       ((looking-at "^\\([ \t]*\\)")
+        (setq indent (ahk-calc-indentation (match-string 1))))
+       ;; subtract indentation if closing bracket only
+       ((looking-at "^[ \t]*[})]")
+        (setq indent (- indent ahk-indentation)))
+       ;; zero indentation when at label or keybinding 
+       ((or (looking-at "^[ \t]*[^,: \t\n]*:")
+            (looking-at "^;;;"))
+        (setq indent 0))))
     ;; set negative indentation to 0
     (if (< indent 0)
         (setq indent 0))
-
-    (let ((point (point-marker)))
-      (beginning-of-line)
-      (if (looking-at "^[ \t]+")
-          (replace-match ""))
-      (indent-to indent)
-      (if  (not (marker-position point))
-          (if (re-search-forward "[^ \t]" (point-max) t)
-              (goto-char (1- (point))))
-        (goto-char point)
-        (set-marker point nil)))
-    (if (bolp)
-        (goto-char (+ (point) indent)))))
+    ;; actual indentation performed here
+    (if (looking-at "^[ \t]+")
+        (replace-match ""))
+    (indent-to indent)
+    (message (format "current: %s previous: %s, ob: %s, cb: %s, bs: %s, else: %s"
+                     (current-indentation)
+                     (ahk-previous-indent)
+                     opening-brace
+                     closing-brace
+                     block-skip
+                     else
+                     ))))
 
 (defun ahk-indent-region (start end)
   (interactive "r")
@@ -491,7 +478,7 @@ For details, see `comment-dwim'."
   "AHK keywords for keys.")
 
 (defvar ahk-operators
-  '("!" "!=" "&" "&&	" "&=" "*	" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." ".	" ".=" "/" "//	" "//=" "/=" ":=" "<" "<<" "<<=	" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" "AND" "NOT" "OR" "^" "^=" "|" "|=" "||" "~" "~=" ",")
+  '("\\!" "!=" "&" "&&	" "&=" "*	" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." ".	" ".=" "/" "//	" "//=" "/=" ":=" "<" "<<" "<<=	" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" " AND " " NOT " " OR " "^" "^=" "|" "|=" "||" "~" "~=" ",")
   "AHK operators.")
 
 (defvar ahk-commands-regexp (regexp-opt ahk-commands 'words))
@@ -504,27 +491,25 @@ For details, see `comment-dwim'."
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
       `(
-        ;; keybindings
-        ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
-        ;; labels
-        ("^\\([^\t\n: ^=]+\\):"            . (1 font-lock-builtin-face))
-        ;; variables
-        ("%[^% ]+%"                        . font-lock-variable-name-face)
-        (,ahk-commands-regexp              . font-lock-regexp-grouping-backslash)
-        (,ahk-functions-regexp             . font-lock-function-name-face)
-        (,ahk-directives-regexp            . font-lock-keyword-face)
-        (,ahk-variables-regexp             . font-lock-variable-name-face)
-        (,ahk-keys-regexp                  . font-lock-constant-face)
-        (,ahk-operators-regexp             . font-lock-type-face)
-        ;; note: order matters
-        ))
+      ("\\s-*;.*$"                       . font-lock-comment-face)
+      ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?"  . font-lock-comment-face)
+      ("^\\([^\t\n:=]+\\)::"             . (1 font-lock-constant-face))
+      ("^\\([^\t\n: ^=]+\\):"            . (1 font-lock-builtin-face))
+      ("%[^% ]+%"                        . font-lock-variable-name-face)
+      (,ahk-commands-regexp              . font-lock-type-face)
+      (,ahk-functions-regexp             . font-lock-function-name-face)
+      (,ahk-directives-regexp            . font-lock-keyword-face)
+      (,ahk-variables-regexp             . font-lock-variable-name-face)
+      (,ahk-keys-regexp                  . font-lock-constant-face)
+      (,ahk-operators-regexp             . font-lock-type-face)
+      ;; note: order matters
+      ))
 
 ;; keyword completion
 (defvar ahk-kwdList nil "AHK keywords.")
 
 (defvar ahk-all-keywords nil "list of all ahk keywords")
 (setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
-
 
 (setq ahk-kwdList (make-hash-table :test 'equal))
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-commands)
@@ -533,7 +518,6 @@ For details, see `comment-dwim'."
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-variables)
 (mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-keys)
 (put 'ahk-kwdList 'risky-local-variable t)
-
 
 (defun ahk-completion-at-point ()
   "Complete the current work using the list of all syntax's."
