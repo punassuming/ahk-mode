@@ -343,7 +343,9 @@ Launches autohotkey help in chm file."
   (let ((indent 0)
         (opening-brace nil)
         (else nil)
+        (label nil)
         (closing-brace nil)
+        (return nil)
         (block-skip nil)
         (case-fold-search t))
     ;; do a backward search to determine the indentation level
@@ -353,66 +355,70 @@ Launches autohotkey help in chm file."
       (setq opening-brace (looking-at "^[ \t]*[{(]$"))
       (setq else          (looking-at "^[ \t]*[eE]lse[ \r\n]"))
       (setq closing-brace (looking-at "^[ \t]*[)}]$"))
-
+      (setq label         (looking-at "^[ \t]*[^:\n ]+:$")) ;
+      ;; (setq return       (looking-at "^\\([ \t]*\\)[rR]eturn"))
       ;; skip previous empty lines and commented lines
+      (setq indent (ahk-previous-indent))
+
+      (forward-line -1)
       (while (and
               (or (looking-at "^[ \t]*$") (looking-at "^;"))
               (not (bobp)))
         (forward-line -1))
       ;; we are now at the previous non-empty /non comment line
       (beginning-of-line)
-      ;; if at end of brace, go to beginning
-      ;; (when (looking-at "^\\([ \t]*\\)[)}]")
-      ;;   (goto-char (match-end 0))
-      ;;   (backward-list)
-      ;;   (skip-chars-backward " \r\t\n")
-      ;;   (beginning-of-line)
-      ;;   (setq block-skip t))
-      ;; skip commented lines backward
-      (setq indent (ahk-previous-indent))
+      ;; default to previous indentation
+      (setq str (substring-no-properties (current-line)))
       (cond
+       (closing-brace
+        (setq indent (- indent ahk-indentation)))
        ;; if beginning with a comment, indent based on previous line
        ((looking-at "^\\([ \t*]\\);")
         (setq indent (ahk-previous-indent)))
+       ;; keybindings
+       ((and (looking-at "^[ \t]*[^:\n ]+:$")
+             (not label))
+        (setq indent (+ indent ahk-indentation)))
+       ;; return
+       ((looking-at "^\\([ \t]*\\)[rR]eturn")
+        (setq indent (- indent ahk-indentation)))
        ;; label
-       ((looking-at "^[^: \n]+:") 
-        (if (and (not opening-brace)
-                 (not block-skip)
-                 (looking-at "^[^: ]+:\\([^:\n]*:\\)?[ \t]*$"))
-            (setq indent ahk-indentation)
-          (setq indent 0)))
+       ((and
+         (not opening-brace)
+         (not block-skip)
+         (looking-at "^[^: \n]+:")
+         (looking-at "^[^:\n]+:\\([^:\n]*\\)?[ 	]*$"))
+        (setq indent (+ indent ahk-indentation)))
+       (label 
+        (setq indent 0))
        ;; opening brace
        ((looking-at "^\\([ \t]*\\)[{(]")
-        (setq indent (ahk-calc-indentation (match-string 1) 1)))
-       ;; return
-       ((and (looking-at "^\\([ \t]*\\)[rR]eturn")
-             (= (ahk-calc-indentation (match-string 1)) ahk-indentation))
-        (setq indent (ahk-calc-indentation (match-string 1) -1)))
+        (setq indent (+ indent ahk-indentation)))
        ;; If/Else with body on next line, but not opening { or (
        ((and (not opening-brace)
              (not block-skip)
-             (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)")
-             (not (looking-at ahk-one-line-if-regexp)))
-        (setq indent (ahk-calc-indentation (match-string 1) 1)))
-       ;; two lines back was a If/Else thus indent like it
-       ;; the last resort, indent as the last line
-       ((looking-at "^\\([ \t]*\\)")
-        (setq indent (ahk-calc-indentation (match-string 1))))
-       ;; subtract indentation if closing bracket only
-       ((looking-at "^[ \t]*[})]")
+             (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)"))
+        (setq indent (+ indent ahk-indentation)))
+       (return
         (setq indent (- indent ahk-indentation)))
+       ;; subtract indentation if closing bracket only
+       ;; ((looking-at "^[ \t]*[})]")
+       ;;  (setq indent (- indent ahk-indentation)))
        ;; zero indentation when at label or keybinding 
-       ((or (looking-at "^[ \t]*[^,: \t\n]*:")
+       ((or (looking-at "^[ \t]*[^,: \t\n]*:$")
             (looking-at "^;;;"))
         (setq indent 0))))
     ;; set negative indentation to 0
-    (if (< indent 0)
-        (setq indent 0))
-    ;; actual indentation performed here
-    (if (looking-at "^[ \t]+")
-        (replace-match ""))
-    (indent-to indent)
-    (message (format "current: %s previous: %s, ob: %s, cb: %s, bs: %s, else: %s"
+    (save-excursion
+      (beginning-of-line)
+      (if (< indent 0)
+          (setq indent 0))
+      ;; actual indentation performed here
+      (if (looking-at "^[ \t]+")
+          (replace-match ""))
+      (indent-to indent))
+    (message (format "indent: %s, current: %s previous: %s, ob: %s, cb: %s, bs: %s, else: %s"
+                     indent
                      (current-indentation)
                      (ahk-previous-indent)
                      opening-brace
@@ -424,15 +430,12 @@ Launches autohotkey help in chm file."
 (defun ahk-indent-region (start end)
   (interactive "r")
   (save-excursion
-    (goto-char end)
-    (setq end (point-marker))
     (goto-char start)
-    (while (< (point) end)
-      (end-of-line)
-      (ahk-indent-line)
-      (forward-line 1))
-    (ahk-indent-line)
-    (set-marker end nil)))
+    (while (and (not (eobp)) (< (point) end))
+      (progn
+        (ahk-indent-line)
+        (forward-line 1)
+        ))))
 
 ;;;; commenting
 
