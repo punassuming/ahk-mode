@@ -110,12 +110,12 @@ buffer-local wherever it is set."
   (require 'cl)
   (require 'thingatpt )
   (require 'rx)
-  (if (fboundp 'auto-complete)
-      (require 'auto-complete-config)))
 
 ;; add to auto-complete sources if ac is loaded
 (eval-after-load "auto-complete-mode"
-  (add-to-list 'ac-modes 'ahk-mode))
+  (progn
+    (require 'auto-complete-config) 
+    (add-to-list 'ac-modes 'ahk-mode)))
 
 ;;; Customization
 
