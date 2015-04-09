@@ -59,19 +59,20 @@
 ;; comments - ; AAA
 ;; - previous block beginning brace = +0
 ;; - indentation level is skipped when determining position for current line
-;; function - AAA(.*) { ... } = +1
-;; function - AAA(.*) { } = +0 ... } = +1
+;; function - AAA(.*) { .\n. } = +1
+;; function - AAA(.*) { } = +0
 ;; label - AAA: = 0
 ;; Keybindings (next line) AAA:: = +1
 ;; Keybindings (current line) AAA:: =+0
-;; Open block {( +1 on next
-;; Close block {( -1 on current
+;; Open block - {( +1 on next
+;; Close block - {( -1 on current
 ;; Class AAA.* { ... } = +1
-;; #if[WinActive] (.*)\n = +1
-;; #if[WinActive]$ = -1
-;; [Rr]eturn = -1
+;; #if block open - #[iI]f[^ \n]* (.*) = +1
+;; #if block close - #[iI]f[^ \n]*$ = -1
+;; return block - [Rr]eturn = -1
 ;; for .*\n { .. } = +1
 ;; loop .*\n { .. } = +1
+;; open assignment - .*operator-regexp$ = +1
 
 ;;; HISTORY
 
@@ -111,6 +112,10 @@ buffer-local wherever it is set."
   (require 'rx)
   (if (fboundp 'auto-complete)
       (require 'auto-complete-config)))
+
+;; add to auto-complete sources if ac is loaded
+(eval-after-load "auto-complete-mode"
+  (add-to-list 'ac-modes 'ahk-mode))
 
 ;;; Customization
 
@@ -213,20 +218,20 @@ buffer-local wherever it is set."
         ;; allow single quoted strings
         (modify-syntax-entry ?' "\"" synTable)
         ;; the rest is
-        ;; (modify-syntax-entry ?. "." synTable)
-        ;; (modify-syntax-entry ?: "." synTable)
-        ;; (modify-syntax-entry ?- "." synTable)
-        ;; (modify-syntax-entry ?! "." synTable)
-        ;; (modify-syntax-entry ?$ "." synTable)
-        ;; (modify-syntax-entry ?% "." synTable)
-        ;; (modify-syntax-entry ?^ "." synTable)
-        ;; (modify-syntax-entry ?& "." synTable)
-        ;; (modify-syntax-entry ?~ "." synTable)
-        ;; (modify-syntax-entry ?| "." synTable)
-        ;; (modify-syntax-entry ?? "." synTable)
-        ;; (modify-syntax-entry ?< "." synTable)
-        ;; (modify-syntax-entry ?> "." synTable)
-        ;; (modify-syntax-entry ?, "." synTable)
+        (modify-syntax-entry ?. "." synTable)
+        (modify-syntax-entry ?: "." synTable)
+        (modify-syntax-entry ?- "." synTable)
+        (modify-syntax-entry ?! "." synTable)
+        (modify-syntax-entry ?$ "." synTable)
+        (modify-syntax-entry ?% "." synTable)
+        (modify-syntax-entry ?^ "." synTable)
+        (modify-syntax-entry ?& "." synTable)
+        (modify-syntax-entry ?~ "." synTable)
+        (modify-syntax-entry ?| "." synTable)
+        (modify-syntax-entry ?? "." synTable)
+        (modify-syntax-entry ?< "." synTable)
+        (modify-syntax-entry ?> "." synTable)
+        (modify-syntax-entry ?, "." synTable)
         synTable))
 
 ;;; imenu support
@@ -351,14 +356,28 @@ Launches autohotkey help in chm file."
     (save-excursion
       (beginning-of-line)
       ;; save type of current line
-      (setq opening-brace (looking-at "^[ \t]*[{(]$"))
-      (setq else          (looking-at "^[ \t]*[eE]lse[ \r\n]"))
-      (setq closing-brace (looking-at "^[ \t]*[)}]$"))
-      (setq label         (looking-at "^[ \t]*[^:\n ]+:$")) ;
-      ;; (setq return       (looking-at "^\\([ \t]*\\)[rR]eturn"))
+      (setq opening-brace      (looking-at "^[ \t]*[{][^}\n]$"))
+      (setq opening-paren      (looking-at "^[ \t]*[(][^)\n]$"))
+      (setq if-else            (looking-at "^[ \t]*\\([iI]f\\|[Ee]lse\\)"))
+      (setq closing-brace      (looking-at "^[ \t]*\\([)}]\\|\\*\\/\\)$"))
+      (setq label              (looking-at "^[ \t]*[^:\n ]+:$"))
+      (setq keybinding         (looking-at "^[ \t]*[^:\n ]+::\\(.*\\)$"))
+      (setq return             (looking-at "^\\([ \t]*\\)[rR]eturn"))
+      (setq blank              (looking-at "^\\([ \t]*\\)\n"))
       ;; skip previous empty lines and commented lines
       (setq indent (ahk-previous-indent))
-
+      (setq prev (ahk-previous-indent))
+      (save-excursion
+        (when closing-brace
+          (progn
+            (beginning-of-line)
+            (re-search-forward "\\(}\\|)\\)" nil t)
+            (backward-list)
+            (setq block-skip t)
+            (setq indent (current-indentation))
+            )
+          )
+        )
       (forward-line -1)
       (while (and
               (or (looking-at "^[ \t]*$") (looking-at "^;"))
@@ -369,6 +388,10 @@ Launches autohotkey help in chm file."
       ;; default to previous indentation
       (setq str (substring-no-properties (current-line)))
       (cond
+       (block-skip
+        nil)
+       (blank
+        (setq indent 0))
        (closing-brace
         (setq indent (- indent ahk-indentation)))
        ;; if beginning with a comment, indent based on previous line
@@ -393,20 +416,32 @@ Launches autohotkey help in chm file."
        ;; opening brace
        ((looking-at "^\\([ \t]*\\)[{(]")
         (setq indent (+ indent ahk-indentation)))
+       ;; brace at end of line
+       ((or 
+         (looking-at "^\\([ \t]*\\).*[{][^}]*$")
+         (looking-at "^\\([ \t]*\\).*[(][^)]*$"))
+        (setq indent (+ indent ahk-indentation)))
        ;; If/Else with body on next line, but not opening { or (
        ((and (not opening-brace)
              (not block-skip)
              (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)"))
         (setq indent (+ indent ahk-indentation)))
-       (return
-        (setq indent (- indent ahk-indentation)))
+       ;; (return
+       ;;  (setq indent (- indent ahk-indentation)))
        ;; subtract indentation if closing bracket only
        ;; ((looking-at "^[ \t]*[})]")
        ;;  (setq indent (- indent ahk-indentation)))
-       ;; zero indentation when at label or keybinding 
+       ;; zero indentation when at label or keybinding
        ((or (looking-at "^[ \t]*[^,: \t\n]*:$")
             (looking-at "^;;;"))
-        (setq indent 0))))
+        (setq indent 0)))
+      ;; check for single line if/else
+      (forward-line -1)
+      (when (and
+             (not block-skip)
+             (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\).*[^{]$"))
+        (setq indent (- prev ahk-indentation)))
+      )
     ;; set negative indentation to 0
     (save-excursion
       (beginning-of-line)
@@ -416,7 +451,7 @@ Launches autohotkey help in chm file."
       (if (looking-at "^[ \t]+")
           (replace-match ""))
       (indent-to indent))
-    (message (format "indent: %s, current: %s previous: %s, ob: %s, cb: %s, bs: %s, else: %s"
+    (message (format "indent: %s, current: %s previous: %s, ob: %s, cb: %s, bs: %s, if-else: %s"
                      indent
                      (current-indentation)
                      (ahk-previous-indent)
@@ -599,6 +634,8 @@ Key Bindings
   ;; (setq ahk-variables-regexp nil)
   ;; (setq ahk-keys-regexp nil)
 
+  (if (boundp 'evil-shift-width)
+      (setq-local evil-shift-width 'ahk-indentation))
   (setq-local comment-start ";")
   (setq-local comment-end   "")
   (setq-local comment-start-skip ";+ *")
@@ -623,12 +660,12 @@ Key Bindings
   ;; completion
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
 
-  ;; add to auto-complete sources if ac is loaded
-  (if (listp 'ac-modes)
-      (add-to-list 'ac-modes 'ahk-mode)
-    (add-to-list 'ac-sources  'ac-source-ahk)
-    (add-to-list 'ac-sources  'ac-source-directives-ahk)
-    (add-to-list 'ac-sources  'ac-source-keys-ahk))
+  (when (listp 'ac-sources)
+    (progn
+      (make-local-variable 'ac-sources)
+      (add-to-list 'ac-sources  'ac-source-ahk)
+      (add-to-list 'ac-sources  'ac-source-directives-ahk)
+      (add-to-list 'ac-sources  'ac-source-keys-ahk)))
 
   (run-mode-hooks 'ahk-mode-hook))
 
