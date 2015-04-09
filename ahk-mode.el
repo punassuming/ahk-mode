@@ -572,7 +572,6 @@ The hook functions in `ahk-mode-hook' are run after mode initialization.
 
 Key Bindings
 \\{ahk-mode-map}"
-  (interactive)
   (kill-all-local-variables)
 
   (set-syntax-table ahk-mode-syntax-table)
