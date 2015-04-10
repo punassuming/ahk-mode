@@ -4,7 +4,7 @@
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
-;; Version: 1.5.4
+;; Version: 1.5.5
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
 
 ;; Based on work from
@@ -109,7 +109,7 @@ buffer-local wherever it is set."
   (require 'font-lock)
   (require 'cl)
   (require 'thingatpt )
-  (require 'rx)
+  (require 'rx))
 
 ;; add to auto-complete sources if ac is loaded
 (eval-after-load "auto-complete-mode"
@@ -119,7 +119,7 @@ buffer-local wherever it is set."
 
 ;;; Customization
 
-(defconst ahk-mode-version "1.5.4"
+(defconst ahk-mode-version "1.5.5"
   "Version of `ahk-mode'")
 
 (defgroup ahk-mode nil
