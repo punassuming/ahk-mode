@@ -451,15 +451,23 @@ Launches autohotkey help in chm file."
       (if (looking-at "^[ \t]+")
           (replace-match ""))
       (indent-to indent))
-    (message (format "indent: %s, current: %s previous: %s, ob: %s, cb: %s, bs: %s, if-else: %s"
-                     indent
-                     (current-indentation)
-                     (ahk-previous-indent)
-                     opening-brace
-                     closing-brace
-                     block-skip
-                     else
-                     ))))
+    (message (format
+              "indent: %s, current: %s previous: %s
+ob: %s, op: %s, cb: %s, bs: %s,
+if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
+              indent
+              (current-indentation)
+              (ahk-previous-indent)
+              opening-brace
+              opening-paren
+              closing-brace
+              block-skip
+              if-else
+              label
+              keybinding
+              return
+              blank
+              ))))
 
 (defun ahk-indent-region (start end)
   (interactive "r")
