@@ -408,7 +408,7 @@ Launches autohotkey help in chm file."
        ((and
          (not opening-brace)
          (not block-skip)
-         (looking-at "^[^: \n]+:")
+         (looking-at "^[^: \n]+:$")
          (looking-at "^[^:\n]+:\\([^:\n]*\\)?[ 	]*$"))
         (setq indent (+ indent ahk-indentation)))
        (label 
@@ -528,17 +528,17 @@ For details, see `comment-dwim'."
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
       `(
-      ("\\s-*;.*$"                       . font-lock-comment-face)
-      ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?"  . font-lock-comment-face)
-      ("^\\([^\t\n:=]+\\)::"             . (1 font-lock-constant-face))
-      ("^\\([^\t\n: ^=]+\\):"            . (1 font-lock-builtin-face))
-      ("%[^% ]+%"                        . font-lock-variable-name-face)
-      (,ahk-commands-regexp              . font-lock-type-face)
-      (,ahk-functions-regexp             . font-lock-function-name-face)
-      (,ahk-directives-regexp            . font-lock-keyword-face)
-      (,ahk-variables-regexp             . font-lock-variable-name-face)
-      (,ahk-keys-regexp                  . font-lock-constant-face)
-      (,ahk-operators-regexp             . font-lock-type-face)
+      ("\\s-*;.*$"                      . font-lock-comment-face)
+      ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
+      ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
+      ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-builtin-face))
+      ("%[^% ]+%"                       . font-lock-variable-name-face)
+      (,ahk-commands-regexp             . font-lock-type-face)
+      (,ahk-functions-regexp            . font-lock-function-name-face)
+      (,ahk-directives-regexp           . font-lock-keyword-face)
+      (,ahk-variables-regexp            . font-lock-variable-name-face)
+      (,ahk-keys-regexp                 . font-lock-constant-face)
+      (,ahk-operators-regexp            . font-lock-type-face)
       ;; note: order matters
       ))
 
