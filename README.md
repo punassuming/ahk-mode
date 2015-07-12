@@ -1,3 +1,5 @@
+[![MELPA](http://melpa.org/packages/ahk-mode-badge.svg)](http://melpa.org/#/ahk-mode)
+
 ahk-mode
 ========
 
