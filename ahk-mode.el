@@ -6,6 +6,7 @@
 ;; URL: https://github.com/ralesi/ahk-mode
 ;; Version: 1.5.5
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
+;; Package-Requires: ((emacs "24.3)(cl-lib "0.5"))
 
 ;; Based on work from
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
@@ -113,9 +114,9 @@ buffer-local wherever it is set."
 
 ;; add to auto-complete sources if ac is loaded
 (eval-after-load "auto-complete-mode"
-  (progn
-    (require 'auto-complete-config) 
-    (add-to-list 'ac-modes 'ahk-mode)))
+  '(progn
+     (require 'auto-complete-config) 
+     (add-to-list 'ac-modes 'ahk-mode)))
 
 ;;; Customization
 
