@@ -152,8 +152,9 @@ buffer-local wherever it is set."
 
 (defvar ahk-path
   (let ((reg-data (shell-command-to-string (format "reg query \"%s\"" ahk-registry))))
-    (file-name-directory
-                          (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\"")))))
+    (when reg-data
+      (file-name-directory
+       (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
   "Path of installed autohotkey executable")
 
 (defvar ahk-path-exe
