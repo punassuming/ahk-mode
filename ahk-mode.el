@@ -31,7 +31,7 @@
 ;; To have emacs automatically load the file when it restarts, and
 ;; automatically use the mode when opening files ending in “.ahk”, do this:
 
-;; This package is located within Melpa.  To install, add
+;; This package is located within Melpa.  To install, add 
 ;; ("melpa" . "http://melpa.org/packages/") to package-archives and
 ;; execute "M-x package-install > ahk-mode"
 
@@ -84,7 +84,6 @@
 ;;; Code:
 
 
-
 ;;; Compatibility
 (eval-and-compile
   ;; `defvar-local' for Emacs 24.2 and below
@@ -115,7 +114,7 @@ buffer-local wherever it is set."
 ;; add to auto-complete sources if ac is loaded
 (eval-after-load "auto-complete"
   '(progn
-     (require 'auto-complete-config)
+     (require 'auto-complete-config) 
      (add-to-list 'ac-modes 'ahk-mode)))
 
 ;;; Customization
@@ -135,7 +134,7 @@ buffer-local wherever it is set."
   :type 'hook
   :group 'ahk-mode)
 
-(defcustom ahk-indentation tab-width
+(defcustom ahk-indentation (or tab-width 2)
   "The indentation level."
   :type 'integer
   :group 'ahk-mode)
@@ -153,7 +152,7 @@ buffer-local wherever it is set."
 (defvar ahk-path
   (let ((reg-data (shell-command-to-string (format "reg query \"%s\"" ahk-registry))))
     (when reg-data
-      (file-name-directory
+    (file-name-directory
        (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
   "Path of installed autohotkey executable")
 
@@ -218,22 +217,22 @@ buffer-local wherever it is set."
         ;; ` is escape
         (modify-syntax-entry ?` "\\" synTable)
         ;; allow single quoted strings
-        (modify-syntax-entry ?' "\"" synTable)
+        ;; (modify-syntax-entry ?' "\"" synTable)
         ;; the rest is
-        (modify-syntax-entry ?. "." synTable)
-        (modify-syntax-entry ?: "." synTable)
-        (modify-syntax-entry ?- "." synTable)
-        (modify-syntax-entry ?! "." synTable)
-        (modify-syntax-entry ?$ "." synTable)
-        (modify-syntax-entry ?% "." synTable)
-        (modify-syntax-entry ?^ "." synTable)
-        (modify-syntax-entry ?& "." synTable)
-        (modify-syntax-entry ?~ "." synTable)
-        (modify-syntax-entry ?| "." synTable)
-        (modify-syntax-entry ?? "." synTable)
-        (modify-syntax-entry ?< "." synTable)
-        (modify-syntax-entry ?> "." synTable)
-        (modify-syntax-entry ?, "." synTable)
+        ;; (modify-syntax-entry ?. "." synTable)
+        ;; (modify-syntax-entry ?: "." synTable)
+        ;; (modify-syntax-entry ?- "." synTable)
+        ;; (modify-syntax-entry ?! "." synTable)
+        ;; (modify-syntax-entry ?$ "." synTable)
+        ;; (modify-syntax-entry ?% "." synTable)
+        ;; (modify-syntax-entry ?^ "." synTable)
+        ;; (modify-syntax-entry ?& "." synTable)
+        ;; (modify-syntax-entry ?~ "." synTable)
+        ;; (modify-syntax-entry ?| "." synTable)
+        ;; (modify-syntax-entry ?? "." synTable)
+        ;; (modify-syntax-entry ?< "." synTable)
+        ;; (modify-syntax-entry ?> "." synTable)
+        ;; (modify-syntax-entry ?, "." synTable)
         synTable))
 
 ;;; imenu support
@@ -249,17 +248,25 @@ buffer-local wherever it is set."
   "Run ahk-script"
   (interactive)
   (let*
-      ((file (shell-quote-argument (buffer-file-name)))
+      ((file (shell-quote-argument
+              (replace-regexp-in-string " " "\ "
+              (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
        (optional-ahk-exe (and (stringp ahk-user-path)
                               (file-exists-p ahk-user-path)))
-       (ahk-exe-path (shell-quote-argument (if optional-ahk-exe
-                                               ahk-user-path
-                                             ahk-path-exe))))
+       (ahk-exe-path (shell-quote-argument
+                      (replace-regexp-in-string " " "\ "
+                      (replace-regexp-in-string "\/" "\\\\"
+                                                (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
     (if (and (stringp ahk-user-path)
              (not optional-ahk-exe))
         (error "Error: optional-ahk-exe is not found.")
       (save-window-excursion
-        (async-shell-command (format "%s %s" ahk-exe-path file))))))
+        (w32-shell-execute "open" file)
+        ;; (when (shell-command (format "cmd.exe /c start \"%s\" \"%s\"" ahk-exe-path file))
+        ;;   (message "%s executed successfully." (buffer-file-name))
+
+        ;;   )
+        ))))
 
 (defun ahk-command-prompt ()
   "Determine command at point, and prompt if nothing found"
@@ -351,16 +358,20 @@ Launches autohotkey help in chm file."
         (else nil)
         (label nil)
         (closing-brace nil)
+        (loop nil)
+        (prev-single nil)
         (return nil)
+        (empty-brace nil)
         (block-skip nil)
         (case-fold-search t))
     ;; do a backward search to determine the indentation level
     (save-excursion
       (beginning-of-line)
       ;; save type of current line
-      (setq opening-brace      (looking-at "^[ \t]*[{][^}\n]$"))
-      (setq opening-paren      (looking-at "^[ \t]*[(][^)\n]$"))
+      (setq opening-brace      (looking-at "^[ \t]*{[^}]"))
+      (setq opening-paren      (looking-at "^[ \t]*([^)]"))
       (setq if-else            (looking-at "^[ \t]*\\([iI]f\\|[Ee]lse\\)"))
+      (setq loop            (looking-at "^[ \t]*\\([Ll]oop\\)[^{]+"))
       (setq closing-brace      (looking-at "^[ \t]*\\([)}]\\|\\*\\/\\)$"))
       (setq label              (looking-at "^[ \t]*[^:\n ]+:$"))
       (setq keybinding         (looking-at "^[ \t]*[^:\n ]+::\\(.*\\)$"))
@@ -407,27 +418,35 @@ Launches autohotkey help in chm file."
        ((looking-at "^\\([ \t]*\\)[rR]eturn")
         (setq indent (- indent ahk-indentation)))
        ;; label
+       (label
+        (setq indent 0))
        ((and
          (not opening-brace)
          (not block-skip)
          (looking-at "^[^: \n]+:$")
          (looking-at "^[^:\n]+:\\([^:\n]*\\)?[ 	]*$"))
         (setq indent (+ indent ahk-indentation)))
-       (label
-        (setq indent 0))
        ;; opening brace
-       ((looking-at "^\\([ \t]*\\)[{(]")
-        (setq indent (+ indent ahk-indentation)))
+       ((looking-at "^\\([ \t]*\\)[{(]$")
+        (and
+         (setq empty-brace t)
+         (setq indent (+ indent ahk-indentation))))
        ;; brace at end of line
-       ((or
+       ((or 
          (looking-at "^\\([ \t]*\\).*[{][^}]*$")
          (looking-at "^\\([ \t]*\\).*[(][^)]*$"))
         (setq indent (+ indent ahk-indentation)))
        ;; If/Else with body on next line, but not opening { or (
        ((and (not opening-brace)
              (not block-skip)
-             (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)"))
-        (setq indent (+ indent ahk-indentation)))
+             ;; (or if-else loop)
+             (or
+              (looking-at "^[ \t]*\\([Ll]oop\\)[^{=\n]*")
+              (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)[^{]*\n"))
+             )
+        (and 
+         (setq prev-single t)
+         (setq indent (+ indent ahk-indentation))))
        ;; (return
        ;;  (setq indent (- indent ahk-indentation)))
        ;; subtract indentation if closing bracket only
@@ -441,8 +460,12 @@ Launches autohotkey help in chm file."
       (forward-line -1)
       (when (and
              (not block-skip)
-             (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\).*[^{]$"))
-        (setq indent (- prev ahk-indentation)))
+             (not empty-brace)
+             (or
+              (looking-at "^[ \t]*\\([Ll]oop\\)[^{\n]+")
+              (looking-at "^\\([ 	]*\\)\\([iI]f\\|[eE]lse\\)[^{\n]+")))
+        ;; adjust when stacking multiple single line commands
+        (setq indent (- indent (if prev-single (- (* 2 ahk-indentation)) 0) ahk-indentation)))
       )
     ;; set negative indentation to 0
     (save-excursion
@@ -537,18 +560,27 @@ For details, see `comment-dwim'."
 
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
-      `(
-        ("\\s-*;.*$"                      . font-lock-comment-face)
+      `(("\\s-*;.*$"                      . font-lock-comment-face)
+        ;; lLTrim0 usage
+        ("^(LTrim0\\(.*\n\\)*"            . font-lock-comment-face)
+        ;; block comments
         ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
+        ;; bindings
         ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
+        ;; labels
         ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-builtin-face))
+        ;; return
+        ("[Rr]eturn"                      . font-lock-warning-face)
+        ;; functions
+        ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
+        ;; variables
         ("%[^% ]+%"                       . font-lock-variable-name-face)
         (,ahk-commands-regexp             . font-lock-type-face)
         (,ahk-functions-regexp            . font-lock-function-name-face)
         (,ahk-directives-regexp           . font-lock-keyword-face)
         (,ahk-variables-regexp            . font-lock-variable-name-face)
         (,ahk-keys-regexp                 . font-lock-constant-face)
-        (,ahk-operators-regexp            . font-lock-type-face)
+        (,ahk-operators-regexp . font-lock-builtin-face)
         ;; note: order matters
         ))
 
@@ -580,13 +612,13 @@ For details, see `comment-dwim'."
           (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no)))))
 
 (defvar ac-source-ahk nil
-  "Completion for AHK mode")
+      "Completion for AHK mode")
 
 (defvar ac-source-keys-ahk nil
-  "Completion for AHK keys mode")
+      "Completion for AHK keys mode")
 
 (defvar ac-source-directives-ahk nil
-  "Completion for AHK directives mode")
+      "Completion for AHK directives mode")
 
 (setq ac-source-ahk
       '((candidates . (all-completions ac-prefix ahk-all-keywords))
@@ -609,6 +641,30 @@ For details, see `comment-dwim'."
 ;; (setq ahk-directives nil)
 ;; (setq ahk-variables nil)
 ;; (setq ahk-keys nil)
+
+(defun ahk-font-lock-extend-region ()
+  "Extend the search region to include an entire block of text."
+  ;; Avoid compiler warnings about these global variables from font-lock.el.
+  ;; See the documentation for variable `font-lock-extend-region-functions'.
+  (eval-when-compile (defvar font-lock-beg) (defvar font-lock-end))
+  (save-excursion
+    (goto-char font-lock-beg)
+    (let ((found (or (re-search-backward "(LTrim0" nil t) (point-min))))
+      (goto-char font-lock-end)
+      (when (re-search-forward "\n)" nil t)
+        (beginning-of-line)
+        (setq font-lock-end (point)))
+      (setq font-lock-beg found))))
+
+(defun ahk-ltrim-blocks ()
+  "Match JavaScript blocks from the point to LAST."
+  (cond ((re-search-backward "(LTrim0" nil t)
+         (let ((beg (match-beginning 0)))
+           (cond ((re-search-forward "\n)" nil t)
+                  (set-match-data (list beg (point)))
+                  t)
+                 (t nil))))
+        (t nil)))
 
 (define-derived-mode ahk-mode prog-mode "Autohotkey Mode"
   "Major mode for editing AutoHotkey script (AHK).
@@ -636,6 +692,10 @@ Key Bindings
   ;; font-lock
   (make-local-variable 'font-lock-defaults)
   (setq font-lock-defaults '((ahk-font-lock-keywords) nil t))
+  ;; (set (make-local-variable 'font-lock-multiline) t)
+  ;; (add-hook 'font-lock-extend-region-functions
+  ;;           'ahk-font-lock-extend-region)
+  ;; (setq syntax-propertize-function)
 
   ;; clear memory
   ;; (setq ahk-commands-regexp nil)
@@ -644,7 +704,8 @@ Key Bindings
   ;; (setq ahk-keys-regexp nil)
 
   (if (boundp 'evil-shift-width)
-      (setq-local evil-shift-width 'ahk-indentation))
+      (setq-local evil-shift-width ahk-indentation))
+
   (setq-local comment-start ";")
   (setq-local comment-end   "")
   (setq-local comment-start-skip ";+ *")
@@ -671,13 +732,21 @@ Key Bindings
 
   (eval-after-load "auto-complete"
     '(when (listp 'ac-sources)
-       (progn
-         (make-local-variable 'ac-sources)
-         (add-to-list 'ac-sources  'ac-source-ahk)
-         (add-to-list 'ac-sources  'ac-source-directives-ahk)
+    (progn
+      (make-local-variable 'ac-sources)
+      (add-to-list 'ac-sources  'ac-source-ahk)
+      (add-to-list 'ac-sources  'ac-source-directives-ahk)
          (add-to-list 'ac-sources  'ac-source-keys-ahk))))
 
   (run-mode-hooks 'ahk-mode-hook))
+
+(cl-loop for buffers in (buffer-list) do
+         (with-current-buffer buffers
+           (when (eq major-mode 'ahk-mode)
+             (message "%s" buffers)
+             (font-lock-mode -1)
+             (ahk-mode)
+             )))
 
 (provide 'ahk-mode)
 
