@@ -31,7 +31,7 @@
 ;; To have emacs automatically load the file when it restarts, and
 ;; automatically use the mode when opening files ending in “.ahk”, do this:
 
-;; This package is located within Melpa.  To install, add 
+;; This package is located within Melpa.  To install, add
 ;; ("melpa" . "http://melpa.org/packages/") to package-archives and
 ;; execute "M-x package-install > ahk-mode"
 
@@ -113,9 +113,9 @@ buffer-local wherever it is set."
   (require 'rx))
 
 ;; add to auto-complete sources if ac is loaded
-(eval-after-load "auto-complete-mode"
+(eval-after-load "auto-complete"
   '(progn
-     (require 'auto-complete-config) 
+     (require 'auto-complete-config)
      (add-to-list 'ac-modes 'ahk-mode)))
 
 ;;; Customization
@@ -413,13 +413,13 @@ Launches autohotkey help in chm file."
          (looking-at "^[^: \n]+:$")
          (looking-at "^[^:\n]+:\\([^:\n]*\\)?[ 	]*$"))
         (setq indent (+ indent ahk-indentation)))
-       (label 
+       (label
         (setq indent 0))
        ;; opening brace
        ((looking-at "^\\([ \t]*\\)[{(]")
         (setq indent (+ indent ahk-indentation)))
        ;; brace at end of line
-       ((or 
+       ((or
          (looking-at "^\\([ \t]*\\).*[{][^}]*$")
          (looking-at "^\\([ \t]*\\).*[(][^)]*$"))
         (setq indent (+ indent ahk-indentation)))
@@ -538,19 +538,19 @@ For details, see `comment-dwim'."
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
       `(
-      ("\\s-*;.*$"                      . font-lock-comment-face)
-      ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
-      ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
-      ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-builtin-face))
-      ("%[^% ]+%"                       . font-lock-variable-name-face)
-      (,ahk-commands-regexp             . font-lock-type-face)
-      (,ahk-functions-regexp            . font-lock-function-name-face)
-      (,ahk-directives-regexp           . font-lock-keyword-face)
-      (,ahk-variables-regexp            . font-lock-variable-name-face)
-      (,ahk-keys-regexp                 . font-lock-constant-face)
-      (,ahk-operators-regexp            . font-lock-type-face)
-      ;; note: order matters
-      ))
+        ("\\s-*;.*$"                      . font-lock-comment-face)
+        ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
+        ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
+        ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-builtin-face))
+        ("%[^% ]+%"                       . font-lock-variable-name-face)
+        (,ahk-commands-regexp             . font-lock-type-face)
+        (,ahk-functions-regexp            . font-lock-function-name-face)
+        (,ahk-directives-regexp           . font-lock-keyword-face)
+        (,ahk-variables-regexp            . font-lock-variable-name-face)
+        (,ahk-keys-regexp                 . font-lock-constant-face)
+        (,ahk-operators-regexp            . font-lock-type-face)
+        ;; note: order matters
+        ))
 
 ;; keyword completion
 (defvar ahk-kwdList nil "AHK keywords.")
@@ -580,13 +580,13 @@ For details, see `comment-dwim'."
           (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no)))))
 
 (defvar ac-source-ahk nil
-      "Completion for AHK mode")
+  "Completion for AHK mode")
 
 (defvar ac-source-keys-ahk nil
-      "Completion for AHK keys mode")
+  "Completion for AHK keys mode")
 
 (defvar ac-source-directives-ahk nil
-      "Completion for AHK directives mode")
+  "Completion for AHK directives mode")
 
 (setq ac-source-ahk
       '((candidates . (all-completions ac-prefix ahk-all-keywords))
@@ -669,12 +669,13 @@ Key Bindings
   ;; completion
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
 
-  (when (listp 'ac-sources)
-    (progn
-      (make-local-variable 'ac-sources)
-      (add-to-list 'ac-sources  'ac-source-ahk)
-      (add-to-list 'ac-sources  'ac-source-directives-ahk)
-      (add-to-list 'ac-sources  'ac-source-keys-ahk)))
+  (eval-after-load "auto-complete"
+    '(when (listp 'ac-sources)
+       (progn
+         (make-local-variable 'ac-sources)
+         (add-to-list 'ac-sources  'ac-source-ahk)
+         (add-to-list 'ac-sources  'ac-source-directives-ahk)
+         (add-to-list 'ac-sources  'ac-source-keys-ahk))))
 
   (run-mode-hooks 'ahk-mode-hook))
 
