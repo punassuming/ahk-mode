@@ -6,7 +6,7 @@
 ;; URL: https://github.com/ralesi/ahk-mode
 ;; Version: 1.5.5
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
-;; Package-Requires: ((emacs "24.3)(cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.3")(cl-lib "0.5"))
 
 ;; Based on work from
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
