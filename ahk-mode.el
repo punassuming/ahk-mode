@@ -75,6 +75,14 @@
 ;; loop .*\n { .. } = +1
 ;; open assignment - .*operator-regexp$ = +1
 
+;; existing issues :
+
+;; paren broken across multiple lines
+;; DllCall("SetWindowPos", "uint", Window%PrevRowText%, "uint", Window%PPrevRowText%
+;;         , "int", 0, "int", 0, "int", 0, "int", 0
+;;           , "uint", 0x13)  ; NOSIZE|NOMOVE|NOACTIVATE (0x1|0x2|0x10)
+
+
 ;;; HISTORY
 
 ;; version 1.5.2, 2015-03-07 improved auto complete to work with ac and company-mode
@@ -129,7 +137,7 @@ buffer-local wherever it is set."
   :link '(url-link :tag "Github" "https://github.com/ralesi/ahk-mode")
   :link '(emacs-commentary-link :tag "Commentary" "ahk-mode"))
 
-(defcustom ahk-mode-hook '(ahk-mode-hook-activate-filling)
+(defcustom ahk-mode-hook '()
   "Hook functions run by `ahk-mode'."
   :type 'hook
   :group 'ahk-mode)
@@ -172,6 +180,9 @@ buffer-local wherever it is set."
   "Predicate function to check existense of autohotkey executable"
   (file-exists-p ahk-path-exe)
   )
+
+(defvar ahk-debug nil
+  "Allows additional output when set to non-nil.")
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
@@ -297,12 +308,6 @@ Launches autohotkey help in chm file."
     ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
     ;; v2
     (browse-url myurl)))
-
-(defun ahk-mode-hook-activate-filling ()
-  "Activates `auto-fill-mode' and truncates lines."
-  (progn
-    (setq truncate-lines nil)
-    (auto-fill-mode 1)))
 
 (defun ahk-version ()
   "Show the `ahk-mode' version in the echo area."
@@ -476,7 +481,8 @@ Launches autohotkey help in chm file."
       (if (looking-at "^[ \t]+")
           (replace-match ""))
       (indent-to indent))
-    (message (format
+    (when ahk-debug
+      (message (format
               "indent: %s, current: %s previous: %s
 ob: %s, op: %s, cb: %s, bs: %s,
 if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
@@ -492,7 +498,7 @@ if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
               keybinding
               return
               blank
-              ))))
+              )))))
 
 (defun ahk-indent-region (start end)
   (interactive "r")
@@ -562,20 +568,20 @@ For details, see `comment-dwim'."
 (setq ahk-font-lock-keywords
       `(("\\s-*;.*$"                      . font-lock-comment-face)
         ;; lLTrim0 usage
-        ("^(LTrim0\\(.*\n\\)*"            . font-lock-comment-face)
+        ("(LTrim0\\(.*\n\\)+"            . font-lock-comment-face)
         ;; block comments
         ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
         ;; bindings
         ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
         ;; labels
-        ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-builtin-face))
+        ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
         ;; return
         ("[Rr]eturn"                      . font-lock-warning-face)
         ;; functions
         ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
         ;; variables
         ("%[^% ]+%"                       . font-lock-variable-name-face)
-        (,ahk-commands-regexp             . font-lock-type-face)
+        (,ahk-commands-regexp             . font-lock-builtin-face)
         (,ahk-functions-regexp            . font-lock-function-name-face)
         (,ahk-directives-regexp           . font-lock-keyword-face)
         (,ahk-variables-regexp            . font-lock-variable-name-face)
@@ -740,13 +746,14 @@ Key Bindings
 
   (run-mode-hooks 'ahk-mode-hook))
 
-(cl-loop for buffers in (buffer-list) do
-         (with-current-buffer buffers
-           (when (eq major-mode 'ahk-mode)
-             (message "%s" buffers)
-             (font-lock-mode -1)
-             (ahk-mode)
-             )))
+(when ahk-debug
+  (cl-loop for buffers in (buffer-list) do
+           (with-current-buffer buffers
+             (when (eq major-mode 'ahk-mode)
+               (message "%s" buffers)
+               (font-lock-mode -1)
+               (ahk-mode)
+               ))))
 
 (provide 'ahk-mode)
 
