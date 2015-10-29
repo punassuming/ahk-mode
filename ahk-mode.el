@@ -178,8 +178,7 @@ buffer-local wherever it is set."
 
 (defun ahk-installed-p ()
   "Predicate function to check existense of autohotkey executable"
-  (file-exists-p ahk-path-exe)
-  )
+  (file-exists-p ahk-path-exe))
 
 (defvar ahk-debug nil
   "Allows additional output when set to non-nil.")
@@ -250,7 +249,7 @@ buffer-local wherever it is set."
 
 (defconst ahk-imenu-generic-expression
   '(("Functions"   "^\s*\\(.*\\)(.*)[\n]{" 1)
-    ("Labels"      "^\s*\\([A-Za-z0-9^:]+\\):\n" 1)
+    ("Labels"      "^\s*\\([^:]+\\):\n" 1)
     ("Keybindings" "^\s*\\(.+?\\)::" 1)
     ("Comments"    "^; \\(.+\\)" 1))
   "imenu index for `ahk-mode'")
@@ -568,7 +567,7 @@ For details, see `comment-dwim'."
 (setq ahk-font-lock-keywords
       `(("\\s-*;.*$"                      . font-lock-comment-face)
         ;; lLTrim0 usage
-        ("(LTrim0\\(.*\n\\)+"            . font-lock-comment-face)
+        ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
         ;; block comments
         ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
         ;; bindings
