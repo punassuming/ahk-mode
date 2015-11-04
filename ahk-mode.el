@@ -31,7 +31,7 @@
 ;; To have emacs automatically load the file when it restarts, and
 ;; automatically use the mode when opening files ending in “.ahk”, do this:
 
-;; This package is located within Melpa.  To install, add 
+;; This package is located within Melpa.  To install, add
 ;; ("melpa" . "http://melpa.org/packages/") to package-archives and
 ;; execute "M-x package-install > ahk-mode"
 
@@ -115,14 +115,14 @@ buffer-local wherever it is set."
 
 (eval-when-compile
   (require 'font-lock)
-  (require 'cl)
+  (require 'cl-lib)
   (require 'thingatpt )
   (require 'rx))
 
 ;; add to auto-complete sources if ac is loaded
 (eval-after-load "auto-complete"
   '(progn
-     (require 'auto-complete-config) 
+     (require 'auto-complete-config)
      (add-to-list 'ac-modes 'ahk-mode)))
 
 ;;; Customization
@@ -267,16 +267,12 @@ buffer-local wherever it is set."
                       (replace-regexp-in-string " " "\ "
                       (replace-regexp-in-string "\/" "\\\\"
                                                 (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
-    (if (and (stringp ahk-user-path)
-             (not optional-ahk-exe))
-        (error "Error: optional-ahk-exe is not found.")
-      (save-window-excursion
-        (w32-shell-execute "open" file)
-        ;; (when (shell-command (format "cmd.exe /c start \"%s\" \"%s\"" ahk-exe-path file))
-        ;;   (message "%s executed successfully." (buffer-file-name))
-
-        ;;   )
-        ))))
+    ;; (if (and (stringp ahk-user-path)
+    ;;          (not optional-ahk-exe))
+    ;;     (error "Error: optional-ahk-exe is not found.")
+              (message "Executing script." file)
+              (w32-shell-execute "open" file)
+              ))
 
 (defun ahk-command-prompt ()
   "Determine command at point, and prompt if nothing found"
@@ -436,7 +432,7 @@ Launches autohotkey help in chm file."
          (setq empty-brace t)
          (setq indent (+ indent ahk-indentation))))
        ;; brace at end of line
-       ((or 
+       ((or
          (looking-at "^\\([ \t]*\\).*[{][^}]*$")
          (looking-at "^\\([ \t]*\\).*[(][^)]*$"))
         (setq indent (+ indent ahk-indentation)))
@@ -448,7 +444,7 @@ Launches autohotkey help in chm file."
               (looking-at "^[ \t]*\\([Ll]oop\\)[^{=\n]*")
               (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)[^{]*\n"))
              )
-        (and 
+        (and
          (setq prev-single t)
          (setq indent (+ indent ahk-indentation))))
        ;; (return
