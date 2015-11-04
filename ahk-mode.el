@@ -622,7 +622,28 @@ For details, see `comment-dwim'."
               (prefix (match-string 0))
               (completion-ignore-case t)
               completions)
-          (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no)))))
+          (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no :annotation-function 'ahk-company-annotation)))))
+
+(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
+
+(defun ahk-company-annotation (candidate)
+  "Annotate company mode completions based on source."
+  (let ((annote (cond
+                 ((member candidate ahk-commands)
+                  "c")
+                 ((member candidate ahk-functions)
+                  "f")
+                 ((member candidate ahk-variables)
+                  "v")
+                 ((member candidate ahk-directives)
+                  "d")
+                 ((member candidate ahk-keys)
+                  "k")
+                 (t ""))))
+    annote
+    ;; (when annote
+    ;;   (concat annote " "))
+    ))
 
 (defvar ac-source-ahk nil
       "Completion for AHK mode")
@@ -741,6 +762,7 @@ Key Bindings
   (setq-local paragraph-ignore-fill-prefix t)
 
   ;; completion
+  (setq-local company-tooltip-align-annotations t)
   (add-hook 'completion-at-point-functions 'ahk-completion-at-point nil t)
 
   (eval-after-load "auto-complete"
