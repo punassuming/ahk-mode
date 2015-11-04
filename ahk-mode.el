@@ -563,11 +563,19 @@ For details, see `comment-dwim'."
 (defvar ahk-keys-regexp (regexp-opt ahk-keys 'words))
 (defvar ahk-operators-regexp (regexp-opt ahk-operators))
 
+(defvar ahk-double-quote-string-re "[\"]\\(\\\\.\\|[^\"\n]\\)*[\"]"
+  "Regexp used to match a double-quoted string literal")
+
+(defvar ahk-single-quote-string-re "[']\\(\\\\.\\|[^'\n]\\)*[']"
+  "Regexp used to match a single-quoted string literal")
+
 (defvar ahk-font-lock-keywords nil )
 (setq ahk-font-lock-keywords
       `(("\\s-*;.*$"                      . font-lock-comment-face)
         ;; lLTrim0 usage
         ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
+        (,ahk-double-quote-string-re . font-lock-string-face)
+        (,ahk-single-quote-string-re . font-lock-string-face)
         ;; block comments
         ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
         ;; bindings
