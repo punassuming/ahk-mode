@@ -588,9 +588,9 @@ For details, see `comment-dwim'."
         ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
         ;; variables
         ("%[^% ]+%"                       . font-lock-variable-name-face)
-        (,ahk-commands-regexp             . font-lock-builtin-face)
+        (,ahk-commands-regexp             . font-lock-keyword-face)
         (,ahk-functions-regexp            . font-lock-function-name-face)
-        (,ahk-directives-regexp           . font-lock-keyword-face)
+        (,ahk-directives-regexp           . font-lock-preprocessor-face)
         (,ahk-variables-regexp            . font-lock-variable-name-face)
         (,ahk-keys-regexp                 . font-lock-constant-face)
         (,ahk-operators-regexp . font-lock-builtin-face)
