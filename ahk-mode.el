@@ -116,7 +116,7 @@ buffer-local wherever it is set."
 (eval-when-compile
   (require 'font-lock)
   (require 'cl-lib)
-  (require 'thingatpt )
+  (require 'thingatpt)
   (require 'rx))
 
 ;; add to auto-complete sources if ac is loaded
