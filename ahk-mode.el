@@ -1,4 +1,4 @@
-;;; ahk-mode.el --- Major mode for editing AHK (AutoHotkey and AutoHotkey_L)
+;;; ahk-mode.el --- Major mode for editing AHK (AutoHotkey and AutoHotkey_L) -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2015 by Rich Alesi
 
