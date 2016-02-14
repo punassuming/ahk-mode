@@ -631,25 +631,21 @@ For details, see `comment-dwim'."
 
 (defun ahk-company-annotation (candidate)
   "Annotate company mode completions based on source."
-  (let ((annote (cond
-                 ((member candidate ahk-commands)
-                  "c")
-                 ((member candidate ahk-functions)
-                  "f")
-                 ((member candidate ahk-variables)
-                  "v")
-                 ((member candidate ahk-directives)
-                  "d")
-                 ((member candidate ahk-keys)
-                  "k")
-                 (t ""))))
-    annote
-    ;; (when annote
-    ;;   (concat annote " "))
-    ))
+  (cond
+   ((member candidate ahk-commands)
+    "c")
+   ((member candidate ahk-functions)
+    "f")
+   ((member candidate ahk-variables)
+    "v")
+   ((member candidate ahk-directives)
+    "d")
+   ((member candidate ahk-keys)
+    "k")
+   (t "")))
 
 (defvar ac-source-ahk nil
-      "Completion for AHK mode")
+  "Completion for AHK mode")
 
 (defvar ac-source-keys-ahk nil
       "Completion for AHK keys mode")
