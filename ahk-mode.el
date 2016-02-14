@@ -315,7 +315,7 @@ Launches autohotkey help in chm file."
 (defun ahk-version ()
   "Show the `ahk-mode' version in the echo area."
   (interactive)
-  (message (concat "ahk-mode version " ahk-mode-version)))
+  (message "ahk-mode version %s" ahk-mode-version))
 
 ;;;; indentation
 (defun ahk-calc-indentation (str &optional offset)
