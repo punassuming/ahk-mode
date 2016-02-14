@@ -158,27 +158,35 @@ buffer-local wherever it is set."
   :group 'ahk-mode)
 
 (defvar ahk-path
-  (let ((reg-data (shell-command-to-string (format "reg query \"%s\"" ahk-registry))))
+  (let* ((reg (executable-find "reg"))
+	 (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
     (when reg-data
-    (file-name-directory
+      (file-name-directory
        (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
   "Path of installed autohotkey executable")
 
 (defvar ahk-path-exe
-  (concat ahk-path "AutoHotkey.exe" )
+  (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
   "Path of installed autohotkey executable")
 
 (defvar ahk-help-chm
-  (concat ahk-path "AutoHotkey.chm")
+  (and ahk-path (concat ahk-path "AutoHotkey.chm"))
   "Path of installed autohotkey help file")
 
 (defvar ahk-spy-exe
-  (concat ahk-path "AU3_Spy.exe")
+  (and ahk-path (concat ahk-path "AU3_Spy.exe"))
   "Path of installed autohotkey help file")
+
+(defun ahk-refresh-paths (&optional path)
+  "Refresh authotkey paths, based on PATH to autohotkey directory."
+  (let ((path (or path ahk-path)))
+    (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
+	  ahk-help-chm (concat ahk-path "AutoHotkey.chm")
+	  ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
 
 (defun ahk-installed-p ()
   "Predicate function to check existense of autohotkey executable"
-  (file-exists-p ahk-path-exe))
+  (and ahk-path-exe (file-exists-p ahk-path-exe)))
 
 (defvar ahk-debug nil
   "Allows additional output when set to non-nil.")
