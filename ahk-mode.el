@@ -24,8 +24,8 @@
 
 ;;; INSTALL
 
-;; Open the file, then type “Alt+x eval-buffer”.  You are done.  Open
-;; any ahk script, then type “Alt+x ahk-mode”, you'll see the
+;; Open the file, then type “M-x eval-buffer”.  You are done.  Open
+;; any ahk script, then type “M-x ahk-mode”, you'll see the
 ;; source code syntax colored.
 
 ;; To have Emacs automatically load the file when it restarts, and
@@ -33,7 +33,7 @@
 
 ;; This package is located within Melpa.  To install, add
 ;; ("melpa" . "http://melpa.org/packages/") to package-archives and
-;; execute "M-x package-install > ahk-mode"
+;; execute "M-x package-install RET ahk-mode RET".
 
 ;;; FEATURES
 
