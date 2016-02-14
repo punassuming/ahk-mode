@@ -18,17 +18,17 @@
 
 ;;; Commentary:
 
-;; A major mode for editing AutoHotkey (AHK) script. Supports commenting,
+;; A major mode for editing AutoHotkey (AHK) script.  Supports commenting,
 ;; indentation, syntax highlighting, and help lookup both localling and on
 ;; the web.
 
 ;;; INSTALL
 
-;; Open the file, then type “Alt+x eval-buffer”. You are done. Open
+;; Open the file, then type “Alt+x eval-buffer”.  You are done.  Open
 ;; any ahk script, then type “Alt+x ahk-mode”, you'll see the
 ;; source code syntax colored.
 
-;; To have emacs automatically load the file when it restarts, and
+;; To have Emacs automatically load the file when it restarts, and
 ;; automatically use the mode when opening files ending in “.ahk”, do this:
 
 ;; This package is located within Melpa.  To install, add
