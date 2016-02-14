@@ -192,7 +192,7 @@ buffer-local wherever it is set."
   "Allows additional output when set to non-nil.")
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
+(add-to-list 'auto-mode-alist '("\\.ahk\\'"  . ahk-mode))
 
 ;;; keymap
 (defvar ahk-mode-map
