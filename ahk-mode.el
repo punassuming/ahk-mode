@@ -704,6 +704,7 @@ For details, see `comment-dwim'."
                  (t nil))))
         (t nil)))
 
+;;;###autoload
 (define-derived-mode ahk-mode prog-mode "Autohotkey Mode"
   "Major mode for editing AutoHotkey script (AHK).
 
