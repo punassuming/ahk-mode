@@ -166,7 +166,7 @@ buffer-local wherever it is set."
   "Path of installed autohotkey executable")
 
 (defvar ahk-path-exe
-  (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
+  (and ahk-path (concat ahk-path "AutoHotkey.exe"))
   "Path of installed autohotkey executable")
 
 (defvar ahk-help-chm
