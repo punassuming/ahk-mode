@@ -297,8 +297,8 @@ buffer-local wherever it is set."
 Launches default browser and opens the doc's url."
   (interactive)
   (let* ((acap (ahk-command-prompt))
-         (myurl2 (concat "http://ahkscript.org/docs/commands/" acap ".htm" ))
-         (myurl1 (concat "http://www.autohotkey.com/docs/commands/" acap ".htm" )))
+         (myurl2 (concat "http://ahkscript.org/docs/commands/" acap ".htm"))
+         (myurl1 (concat "http://www.autohotkey.com/docs/commands/" acap ".htm")))
     (browse-url myurl2)))
 
 (defun ahk-lookup-chm ()
@@ -306,7 +306,7 @@ Launches default browser and opens the doc's url."
 Launches autohotkey help in chm file."
   (interactive)
   (let* ((acap (ahk-command-prompt))
-         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm" )))
+         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     ;; v1
     ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
     ;; v2
@@ -772,10 +772,10 @@ Key Bindings
 
   (eval-after-load "auto-complete"
     '(when (listp 'ac-sources)
-    (progn
-      (make-local-variable 'ac-sources)
-      (add-to-list 'ac-sources  'ac-source-ahk)
-      (add-to-list 'ac-sources  'ac-source-directives-ahk)
+       (progn
+         (make-local-variable 'ac-sources)
+         (add-to-list 'ac-sources  'ac-source-ahk)
+         (add-to-list 'ac-sources  'ac-source-directives-ahk)
          (add-to-list 'ac-sources  'ac-source-keys-ahk))))
 
   (run-mode-hooks 'ahk-mode-hook))
