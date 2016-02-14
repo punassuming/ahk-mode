@@ -601,18 +601,18 @@ For details, see `comment-dwim'."
         ))
 
 ;; keyword completion
-(defvar ahk-kwdList nil "AHK keywords.")
+(defvar ahk-kwd-list nil "AHK keywords.")
 
 (defvar ahk-all-keywords nil "list of all ahk keywords")
 (setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
 
-(setq ahk-kwdList (make-hash-table :test 'equal))
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-commands)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-functions)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-directives)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-variables)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-keys)
-(put 'ahk-kwdList 'risky-local-variable t)
+(setq ahk-kwd-list (make-hash-table :test 'equal))
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-commands)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-functions)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-directives)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-variables)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-keys)
+(put 'ahk-kwd-list 'risky-local-variable t)
 
 (defun ahk-completion-at-point ()
   "Complete the current work using the list of all syntax's."
