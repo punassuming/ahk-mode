@@ -1,6 +1,6 @@
 ;;; ahk-mode.el --- Major mode for editing AHK (AutoHotkey and AutoHotkey_L) -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015 by Rich Alesi
+;; Copyright (C) 2015-2016 by Rich Alesi
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
