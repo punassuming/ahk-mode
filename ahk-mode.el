@@ -297,9 +297,8 @@ buffer-local wherever it is set."
 Launches default browser and opens the doc's url."
   (interactive)
   (let* ((acap (ahk-command-prompt))
-         (myurl2 (concat "http://ahkscript.org/docs/commands/" acap ".htm"))
-         (myurl1 (concat "http://www.autohotkey.com/docs/commands/" acap ".htm")))
-    (browse-url myurl2)))
+         (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
+    (browse-url url)))
 
 (defun ahk-lookup-chm ()
   "Look up current word in AutoHotkey's reference doc.
