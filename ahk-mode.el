@@ -780,10 +780,10 @@ Key Bindings
   (run-mode-hooks 'ahk-mode-hook))
 
 (when ahk-debug
-  (cl-loop for buffers in (buffer-list) do
-           (with-current-buffer buffers
+  (cl-loop for buffer in (buffer-list) do
+           (with-current-buffer buffer
              (when (eq major-mode 'ahk-mode)
-               (message "%s" buffers)
+               (message "%s" buffer)
                (font-lock-mode -1)
                (ahk-mode)
                ))))
