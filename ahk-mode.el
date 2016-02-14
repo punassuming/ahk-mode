@@ -159,7 +159,7 @@ buffer-local wherever it is set."
 
 (defvar ahk-path
   (let* ((reg (executable-find "reg"))
-	 (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
+         (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
     (when reg-data
       (file-name-directory
        (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
@@ -181,8 +181,8 @@ buffer-local wherever it is set."
   "Refresh authotkey paths, based on PATH to autohotkey directory."
   (let ((path (or path ahk-path)))
     (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
-	  ahk-help-chm (concat ahk-path "AutoHotkey.chm")
-	  ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
+          ahk-help-chm (concat ahk-path "AutoHotkey.chm")
+          ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
 
 (defun ahk-installed-p ()
   "Predicate function to check existense of autohotkey executable"
@@ -268,19 +268,19 @@ buffer-local wherever it is set."
   (let*
       ((file (shell-quote-argument
               (replace-regexp-in-string " " "\ "
-              (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
+                                        (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
        (optional-ahk-exe (and (stringp ahk-user-path)
                               (file-exists-p ahk-user-path)))
        (ahk-exe-path (shell-quote-argument
                       (replace-regexp-in-string " " "\ "
-                      (replace-regexp-in-string "\/" "\\\\"
-                                                (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
+                                                (replace-regexp-in-string "\/" "\\\\"
+                                                                          (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
     ;; (if (and (stringp ahk-user-path)
     ;;          (not optional-ahk-exe))
     ;;     (error "Error: optional-ahk-exe is not found.")
-              (message "Executing script." file)
-              (w32-shell-execute "open" file)
-              ))
+    (message "Executing script." file)
+    (w32-shell-execute "open" file)
+    ))
 
 (defun ahk-command-prompt ()
   "Determine command at point, and prompt if nothing found"
