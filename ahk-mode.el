@@ -4,7 +4,7 @@
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
-;; Version: 1.5.5
+;; Version: 1.5.6
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
 ;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
 
@@ -118,6 +118,9 @@ buffer-local wherever it is set."
   (require 'cl-lib)
   (require 'thingatpt)
   (require 'rx))
+
+(defvar ac-modes)
+(defvar company-tooltip-align-annotations)
 
 ;; add to auto-complete sources if ac is loaded
 (eval-after-load "auto-complete"
