@@ -1,12 +1,12 @@
-;;; ahk-mode.el --- Major mode for editing AHK (AutoHotkey and AutoHotkey_L)
+;;; ahk-mode.el --- Major mode for editing AHK (AutoHotkey and AutoHotkey_L) -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015 by Rich Alesi
+;; Copyright (C) 2015-2016 by Rich Alesi
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
 ;; Version: 1.5.5
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
-;; Package-Requires: ((emacs "24.3")(cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
 
 ;; Based on work from
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
@@ -18,22 +18,22 @@
 
 ;;; Commentary:
 
-;; A major mode for editing AutoHotkey (AHK) script. Supports commenting,
+;; A major mode for editing AutoHotkey (AHK) script.  Supports commenting,
 ;; indentation, syntax highlighting, and help lookup both localling and on
 ;; the web.
 
 ;;; INSTALL
 
-;; Open the file, then type “Alt+x eval-buffer”. You are done. Open
-;; any ahk script, then type “Alt+x ahk-mode”, you'll see the
+;; Open the file, then type “M-x eval-buffer”.  You are done.  Open
+;; any ahk script, then type “M-x ahk-mode”, you'll see the
 ;; source code syntax colored.
 
-;; To have emacs automatically load the file when it restarts, and
+;; To have Emacs automatically load the file when it restarts, and
 ;; automatically use the mode when opening files ending in “.ahk”, do this:
 
 ;; This package is located within Melpa.  To install, add
 ;; ("melpa" . "http://melpa.org/packages/") to package-archives and
-;; execute "M-x package-install > ahk-mode"
+;; execute "M-x package-install RET ahk-mode RET".
 
 ;;; FEATURES
 
@@ -116,7 +116,7 @@ buffer-local wherever it is set."
 (eval-when-compile
   (require 'font-lock)
   (require 'cl-lib)
-  (require 'thingatpt )
+  (require 'thingatpt)
   (require 'rx))
 
 ;; add to auto-complete sources if ac is loaded
@@ -159,14 +159,14 @@ buffer-local wherever it is set."
 
 (defvar ahk-path
   (let* ((reg (executable-find "reg"))
-	 (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
+         (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
     (when reg-data
       (file-name-directory
        (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
   "Path of installed autohotkey executable")
 
 (defvar ahk-path-exe
-  (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
+  (and ahk-path (concat ahk-path "AutoHotkey.exe"))
   "Path of installed autohotkey executable")
 
 (defvar ahk-help-chm
@@ -181,8 +181,8 @@ buffer-local wherever it is set."
   "Refresh authotkey paths, based on PATH to autohotkey directory."
   (let ((path (or path ahk-path)))
     (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
-	  ahk-help-chm (concat ahk-path "AutoHotkey.chm")
-	  ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
+          ahk-help-chm (concat ahk-path "AutoHotkey.chm")
+          ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
 
 (defun ahk-installed-p ()
   "Predicate function to check existense of autohotkey executable"
@@ -192,7 +192,7 @@ buffer-local wherever it is set."
   "Allows additional output when set to non-nil.")
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.ahk$"  . ahk-mode))
+(add-to-list 'auto-mode-alist '("\\.ahk\\'"  . ahk-mode))
 
 ;;; keymap
 (defvar ahk-mode-map
@@ -268,19 +268,19 @@ buffer-local wherever it is set."
   (let*
       ((file (shell-quote-argument
               (replace-regexp-in-string " " "\ "
-              (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
+                                        (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
        (optional-ahk-exe (and (stringp ahk-user-path)
                               (file-exists-p ahk-user-path)))
        (ahk-exe-path (shell-quote-argument
                       (replace-regexp-in-string " " "\ "
-                      (replace-regexp-in-string "\/" "\\\\"
-                                                (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
+                                                (replace-regexp-in-string "\/" "\\\\"
+                                                                          (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
     ;; (if (and (stringp ahk-user-path)
     ;;          (not optional-ahk-exe))
     ;;     (error "Error: optional-ahk-exe is not found.")
-              (message "Executing script." file)
-              (w32-shell-execute "open" file)
-              ))
+    (message "Executing script." file)
+    (w32-shell-execute "open" file)
+    ))
 
 (defun ahk-command-prompt ()
   "Determine command at point, and prompt if nothing found"
@@ -297,16 +297,15 @@ buffer-local wherever it is set."
 Launches default browser and opens the doc's url."
   (interactive)
   (let* ((acap (ahk-command-prompt))
-         (myurl2 (concat "http://ahkscript.org/docs/commands/" acap ".htm" ))
-         (myurl1 (concat "http://www.autohotkey.com/docs/commands/" acap ".htm" )))
-    (browse-url myurl2)))
+         (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
+    (browse-url url)))
 
 (defun ahk-lookup-chm ()
   "Look up current word in AutoHotkey's reference doc.
 Launches autohotkey help in chm file."
   (interactive)
   (let* ((acap (ahk-command-prompt))
-         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm" )))
+         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     ;; v1
     ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
     ;; v2
@@ -315,7 +314,7 @@ Launches autohotkey help in chm file."
 (defun ahk-version ()
   "Show the `ahk-mode' version in the echo area."
   (interactive)
-  (message (concat "ahk-mode version " ahk-mode-version)))
+  (message "ahk-mode version %s" ahk-mode-version))
 
 ;;;; indentation
 (defun ahk-calc-indentation (str &optional offset)
@@ -602,18 +601,18 @@ For details, see `comment-dwim'."
         ))
 
 ;; keyword completion
-(defvar ahk-kwdList nil "AHK keywords.")
+(defvar ahk-kwd-list nil "AHK keywords.")
 
 (defvar ahk-all-keywords nil "list of all ahk keywords")
 (setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
 
-(setq ahk-kwdList (make-hash-table :test 'equal))
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-commands)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-functions)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-directives)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-variables)
-(mapc (lambda (x) (puthash x t ahk-kwdList)) ahk-keys)
-(put 'ahk-kwdList 'risky-local-variable t)
+(setq ahk-kwd-list (make-hash-table :test 'equal))
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-commands)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-functions)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-directives)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-variables)
+(mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-keys)
+(put 'ahk-kwd-list 'risky-local-variable t)
 
 (defun ahk-completion-at-point ()
   "Complete the current work using the list of all syntax's."
@@ -632,25 +631,21 @@ For details, see `comment-dwim'."
 
 (defun ahk-company-annotation (candidate)
   "Annotate company mode completions based on source."
-  (let ((annote (cond
-                 ((member candidate ahk-commands)
-                  "c")
-                 ((member candidate ahk-functions)
-                  "f")
-                 ((member candidate ahk-variables)
-                  "v")
-                 ((member candidate ahk-directives)
-                  "d")
-                 ((member candidate ahk-keys)
-                  "k")
-                 (t ""))))
-    annote
-    ;; (when annote
-    ;;   (concat annote " "))
-    ))
+  (cond
+   ((member candidate ahk-commands)
+    "c")
+   ((member candidate ahk-functions)
+    "f")
+   ((member candidate ahk-variables)
+    "v")
+   ((member candidate ahk-directives)
+    "d")
+   ((member candidate ahk-keys)
+    "k")
+   (t "")))
 
 (defvar ac-source-ahk nil
-      "Completion for AHK mode")
+  "Completion for AHK mode")
 
 (defvar ac-source-keys-ahk nil
       "Completion for AHK keys mode")
@@ -704,7 +699,8 @@ For details, see `comment-dwim'."
                  (t nil))))
         (t nil)))
 
-(define-derived-mode ahk-mode prog-mode "Autohotkey Mode"
+;;;###autoload
+(define-derived-mode ahk-mode prog-mode "AutoHotkey Mode"
   "Major mode for editing AutoHotkey script (AHK).
 
 The hook functions in `ahk-mode-hook' are run after mode initialization.
@@ -771,19 +767,19 @@ Key Bindings
 
   (eval-after-load "auto-complete"
     '(when (listp 'ac-sources)
-    (progn
-      (make-local-variable 'ac-sources)
-      (add-to-list 'ac-sources  'ac-source-ahk)
-      (add-to-list 'ac-sources  'ac-source-directives-ahk)
+       (progn
+         (make-local-variable 'ac-sources)
+         (add-to-list 'ac-sources  'ac-source-ahk)
+         (add-to-list 'ac-sources  'ac-source-directives-ahk)
          (add-to-list 'ac-sources  'ac-source-keys-ahk))))
 
   (run-mode-hooks 'ahk-mode-hook))
 
 (when ahk-debug
-  (cl-loop for buffers in (buffer-list) do
-           (with-current-buffer buffers
+  (cl-loop for buffer in (buffer-list) do
+           (with-current-buffer buffer
              (when (eq major-mode 'ahk-mode)
-               (message "%s" buffers)
+               (message "%s" buffer)
                (font-lock-mode -1)
                (ahk-mode)
                ))))
