@@ -6,7 +6,7 @@
 ;; URL: https://github.com/ralesi/ahk-mode
 ;; Version: 1.5.6
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.3"))
 
 ;; Based on work from
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
@@ -113,11 +113,9 @@ buffer-local wherever it is set."
 
 ;;; Requirements
 
-(eval-when-compile
-  (require 'font-lock)
-  (require 'cl-lib)
-  (require 'thingatpt)
-  (require 'rx))
+(require 'font-lock)
+(require 'thingatpt)
+(require 'rx)
 
 (defvar ac-modes)
 (defvar company-tooltip-align-annotations)
@@ -769,13 +767,13 @@ Key Bindings
   (run-mode-hooks 'ahk-mode-hook))
 
 (when ahk-debug
-  (cl-loop for buffer in (buffer-list) do
-           (with-current-buffer buffer
-             (when (eq major-mode 'ahk-mode)
-               (message "%s" buffer)
-               (font-lock-mode -1)
-               (ahk-mode)
-               ))))
+  (mapc (lambda (buffer)
+          (with-current-buffer buffer
+            (when (eq major-mode 'ahk-mode)
+              (message "%s" buffer)
+              (font-lock-mode -1)
+              (ahk-mode))))
+        (buffer-list)))
 
 (provide 'ahk-mode)
 
