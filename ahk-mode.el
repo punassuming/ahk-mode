@@ -188,7 +188,7 @@ buffer-local wherever it is set."
           ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
 
 (defun ahk-installed-p ()
-  "Predicate function to check existense of autohotkey executable"
+  "Predicate function to check existense of autohotkey executable."
   (and ahk-path-exe (file-exists-p ahk-path-exe)))
 
 (defvar ahk-debug nil
