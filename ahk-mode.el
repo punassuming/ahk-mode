@@ -269,22 +269,11 @@ buffer-local wherever it is set."
 (defun ahk-run-script ()
   "Run ahk-script"
   (interactive)
-  (let*
-      ((file (shell-quote-argument
-              (replace-regexp-in-string " " "\ "
-                                        (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
-       (optional-ahk-exe (and (stringp ahk-user-path)
-                              (file-exists-p ahk-user-path)))
-       (ahk-exe-path (shell-quote-argument
-                      (replace-regexp-in-string " " "\ "
-                                                (replace-regexp-in-string "\/" "\\\\"
-                                                                          (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
-    ;; (if (and (stringp ahk-user-path)
-    ;;          (not optional-ahk-exe))
-    ;;     (error "Error: optional-ahk-exe is not found.")
+  (let ((file (shell-quote-argument
+               (replace-regexp-in-string " " "\ "
+                                         (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t)))))
     (message "Executing script %s" file)
-    (w32-shell-execute "open" file)
-    ))
+    (w32-shell-execute "open" file)))
 
 (defun ahk-command-prompt ()
   "Determine command at point, and prompt if nothing found"
