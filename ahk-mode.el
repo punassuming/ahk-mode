@@ -275,7 +275,7 @@ buffer-local wherever it is set."
     (message "Executing script %s" file)
     (w32-shell-execute "open" file)))
 
-(defun ahk-command-prompt ()
+(defun ahk-command-at-point ()
   "Determine command at point, and prompt if nothing found"
   (let ((myword (or  (if (region-active-p)
                          (buffer-substring-no-properties
@@ -289,7 +289,7 @@ buffer-local wherever it is set."
   "Look up current word in AutoHotkey's reference doc.
 Launches default browser and opens the doc's url."
   (interactive)
-  (let* ((acap (ahk-command-prompt))
+  (let* ((acap (ahk-command-at-point))
          (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     (browse-url url)))
 
@@ -297,7 +297,7 @@ Launches default browser and opens the doc's url."
   "Look up current word in AutoHotkey's reference doc.
 Launches autohotkey help in chm file."
   (interactive)
-  (let* ((acap (ahk-command-prompt))
+  (let* ((acap (ahk-command-at-point))
          (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     ;; v1
     ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
