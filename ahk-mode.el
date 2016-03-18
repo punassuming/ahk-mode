@@ -267,7 +267,7 @@ buffer-local wherever it is set."
   "imenu index for `ahk-mode'")
 
 (defun ahk-run-script ()
-  "Run ahk-script"
+  "Run the ahk-script in the current buffer."
   (interactive)
   (let ((file (shell-quote-argument
                (replace-regexp-in-string " " "\ "
