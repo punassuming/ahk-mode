@@ -281,7 +281,7 @@ buffer-local wherever it is set."
     ;; (if (and (stringp ahk-user-path)
     ;;          (not optional-ahk-exe))
     ;;     (error "Error: optional-ahk-exe is not found.")
-    (message "Executing script." file)
+    (message "Executing script %s" file)
     (w32-shell-execute "open" file)
     ))
 
