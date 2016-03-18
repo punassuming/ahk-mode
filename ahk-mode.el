@@ -276,14 +276,14 @@ buffer-local wherever it is set."
     (w32-shell-execute "open" file)))
 
 (defun ahk-command-at-point ()
-  "Determine command at point, and prompt if nothing found"
-  (let ((myword (or  (if (region-active-p)
+  "Determine command at point, and prompt if nothing found."
+  (let ((command (or (if (region-active-p)
                          (buffer-substring-no-properties
                           (region-beginning)
                           (region-end))
                        (thing-at-point 'symbol))
                      (read-string "Command: "))))
-    myword))
+    command))
 
 (defun ahk-lookup-web ()
   "Look up current word in AutoHotkey's reference doc.
