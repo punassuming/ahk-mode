@@ -46,7 +46,7 @@ If the installation doesn't work try refreshing the package list:
 
 ## License
 
-Copyright Â© 2015-2016 Rich Alesi and [contributors][].
+Copyright © 2015-2016 Rich Alesi and [contributors][].
 
 Distributed under the GNU General Public License; type <kbd>C-h C-c</kbd> to view it.
 
