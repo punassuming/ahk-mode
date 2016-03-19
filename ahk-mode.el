@@ -91,26 +91,6 @@
 
 ;;; Code:
 
-
-;;; Compatibility
-(eval-and-compile
-  ;; `defvar-local' for Emacs 24.2 and below
-  (unless (fboundp 'defvar-local)
-    (defmacro defvar-local (var val &optional docstring)
-      "Define VAR as a buffer-local variable with default value VAL.
-Like `defvar' but additionally marks the variable as being automatically
-buffer-local wherever it is set."
-      (declare (debug defvar) (doc-string 3))
-      `(progn
-         (defvar ,var ,val ,docstring)
-         (make-variable-buffer-local ',var))))
-
-  ;; `setq-local' for Emacs 24.2 and below
-  (unless (fboundp 'setq-local)
-    (defmacro setq-local (var val)
-      "Set variable VAR to value VAL in current buffer."
-      `(set (make-local-variable ',var) ,val))))
-
 ;;; Requirements
 
 (require 'font-lock)
@@ -138,56 +118,10 @@ buffer-local wherever it is set."
   :link '(url-link :tag "Github" "https://github.com/ralesi/ahk-mode")
   :link '(emacs-commentary-link :tag "Commentary" "ahk-mode"))
 
-(defcustom ahk-mode-hook '()
-  "Hook functions run by `ahk-mode'."
-  :type 'hook
-  :group 'ahk-mode)
-
 (defcustom ahk-indentation (or tab-width 2)
   "The indentation level."
   :type 'integer
   :group 'ahk-mode)
-
-(defcustom ahk-user-path nil
-  "Use custom path to autohotkey executable"
-  :type 'string
-  :group 'ahk-mode)
-
-(defcustom ahk-registry "HKEY_CLASSES_ROOT\\AutoHotkeyScript\\Shell\\Open\\Command"
-  "Registry location for autohotkey install"
-  :type 'string
-  :group 'ahk-mode)
-
-(defvar ahk-path
-  (let* ((reg (executable-find "reg"))
-         (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
-    (when reg-data
-      (file-name-directory
-       (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
-  "Path of installed autohotkey executable")
-
-(defvar ahk-path-exe
-  (and ahk-path (concat ahk-path "AutoHotkey.exe"))
-  "Path of installed autohotkey executable")
-
-(defvar ahk-help-chm
-  (and ahk-path (concat ahk-path "AutoHotkey.chm"))
-  "Path of installed autohotkey help file")
-
-(defvar ahk-spy-exe
-  (and ahk-path (concat ahk-path "AU3_Spy.exe"))
-  "Path of installed autohotkey help file")
-
-(defun ahk-refresh-paths (&optional path)
-  "Refresh authotkey paths, based on PATH to autohotkey directory."
-  (let ((path (or path ahk-path)))
-    (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
-          ahk-help-chm (concat ahk-path "AutoHotkey.chm")
-          ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
-
-(defun ahk-installed-p ()
-  "Predicate function to check existense of autohotkey executable."
-  (and ahk-path-exe (file-exists-p ahk-path-exe)))
 
 (defvar ahk-debug nil
   "Allows additional output when set to non-nil.")
@@ -199,9 +133,8 @@ buffer-local wherever it is set."
 (defvar ahk-mode-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
-    (define-key map (kbd "C-c C-r") #'ahk-lookup-chm)
     (define-key map (kbd "C-c C-?") #'ahk-lookup-web)
-    (define-key map (kbd "C-c i") #'ahk-indent-message)
+    (define-key map (kbd "C-c M-i") #'ahk-indent-message)
     (define-key map (kbd "C-c C-c") #'ahk-comment-dwim)
     (define-key map (kbd "C-c C-b") #'ahk-comment-block-dwim)
     (define-key map (kbd "C-c C-k") #'ahk-run-script)
@@ -218,42 +151,24 @@ buffer-local wherever it is set."
     ["Version" ahk-version]))
 
 ;;; syntax table
-(defvar ahk-mode-syntax-table nil "Syntax table for `ahk-mode'.")
-
-(setq ahk-mode-syntax-table
-      (let ((synTable (make-syntax-table)))
-        ;; these are also allowed in variable names
-        (modify-syntax-entry ?#  "w" synTable)
-        (modify-syntax-entry ?_  "w" synTable)
-        (modify-syntax-entry ?@  "w" synTable)
-        ;; some additional characters used in paths and switches
-        (modify-syntax-entry ?\\  "w" synTable)
-        (modify-syntax-entry ?\;  "< b" synTable)
-        ;; for multiline comments
-        (modify-syntax-entry ?\/  ". 14" synTable)
-        (modify-syntax-entry ?*  ". 23"   synTable)
-        ;; New line
-        (modify-syntax-entry ?\n "> b"  synTable)
-        ;; ` is escape
-        (modify-syntax-entry ?` "\\" synTable)
-        ;; allow single quoted strings
-        ;; (modify-syntax-entry ?' "\"" synTable)
-        ;; the rest is
-        ;; (modify-syntax-entry ?. "." synTable)
-        ;; (modify-syntax-entry ?: "." synTable)
-        ;; (modify-syntax-entry ?- "." synTable)
-        ;; (modify-syntax-entry ?! "." synTable)
-        ;; (modify-syntax-entry ?$ "." synTable)
-        ;; (modify-syntax-entry ?% "." synTable)
-        ;; (modify-syntax-entry ?^ "." synTable)
-        ;; (modify-syntax-entry ?& "." synTable)
-        ;; (modify-syntax-entry ?~ "." synTable)
-        ;; (modify-syntax-entry ?| "." synTable)
-        ;; (modify-syntax-entry ?? "." synTable)
-        ;; (modify-syntax-entry ?< "." synTable)
-        ;; (modify-syntax-entry ?> "." synTable)
-        ;; (modify-syntax-entry ?, "." synTable)
-        synTable))
+(defvar ahk-mode-syntax-table
+  (let ((syntax-table (make-syntax-table)))
+    ;; these are also allowed in variable names
+    (modify-syntax-entry ?#  "w" syntax-table)
+    (modify-syntax-entry ?_  "w" syntax-table)
+    (modify-syntax-entry ?@  "w" syntax-table)
+    ;; some additional characters used in paths and switches
+    (modify-syntax-entry ?\\  "w" syntax-table)
+    (modify-syntax-entry ?\;  "< b" syntax-table)
+    ;; for multiline comments
+    (modify-syntax-entry ?\/  ". 14" syntax-table)
+    (modify-syntax-entry ?*  ". 23"   syntax-table)
+    ;; New line
+    (modify-syntax-entry ?\n "> b"  syntax-table)
+    ;; ` is escape
+    (modify-syntax-entry ?` "\\" syntax-table)
+    syntax-table)
+  "Syntax table for `ahk-mode'.")
 
 ;;; imenu support
 
@@ -290,17 +205,6 @@ Launches default browser and opens the doc's url."
   (let* ((acap (ahk-command-at-point))
          (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     (browse-url url)))
-
-(defun ahk-lookup-chm ()
-  "Look up current word in AutoHotkey's reference doc.
-Launches autohotkey help in chm file."
-  (interactive)
-  (let* ((acap (ahk-command-at-point))
-         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
-    ;; v1
-    ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
-    ;; v2
-    (browse-url myurl)))
 
 (defun ahk-version ()
   "Show the `ahk-mode' version in the echo area."
@@ -476,22 +380,22 @@ Launches autohotkey help in chm file."
       (indent-to indent))
     (when ahk-debug
       (message (format
-              "indent: %s, current: %s previous: %s
+                "indent: %s, current: %s previous: %s
 ob: %s, op: %s, cb: %s, bs: %s,
 if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
-              indent
-              (current-indentation)
-              (ahk-previous-indent)
-              opening-brace
-              opening-paren
-              closing-brace
-              block-skip
-              if-else
-              label
-              keybinding
-              return
-              blank
-              )))))
+                indent
+                (current-indentation)
+                (ahk-previous-indent)
+                opening-brace
+                opening-paren
+                closing-brace
+                block-skip
+                if-else
+                label
+                keybinding
+                return
+                blank
+                )))))
 
 (defun ahk-indent-region (start end)
   (interactive "r")
@@ -547,7 +451,7 @@ For details, see `comment-dwim'."
   "AHK keywords for keys.")
 
 (defvar ahk-operators
-  '("\\!" "!=" "&" "&&	" "&=" "*	" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." ".	" ".=" "/" "//	" "//=" "/=" ":=" "<" "<<" "<<=	" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" " AND " " NOT " " OR " "^" "^=" "|" "|=" "||" "~" "~=" ",")
+  '("\\!" "!=" "&" "&&" "&=" "*" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." "." ".=" "/" "//" "//=" "/=" ":=" "<" "<<" "<<=" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" "AND" "NOT" "OR" "^" "^=" "|" "|=" "||" "~" "~=" ",")
   "AHK operators.")
 
 (defvar ahk-commands-regexp (regexp-opt ahk-commands 'words))
@@ -563,41 +467,40 @@ For details, see `comment-dwim'."
 (defvar ahk-single-quote-string-re "[']\\(\\\\.\\|[^'\n]\\)*[']"
   "Regexp used to match a single-quoted string literal")
 
-(defvar ahk-font-lock-keywords nil )
-(setq ahk-font-lock-keywords
-      `(("\\s-*;.*$"                      . font-lock-comment-face)
-        ;; lLTrim0 usage
-        ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
-        (,ahk-double-quote-string-re . font-lock-string-face)
-        (,ahk-single-quote-string-re . font-lock-string-face)
-        ;; block comments
-        ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
-        ;; bindings
-        ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
-        ;; labels
-        ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
-        ;; return
-        ("[Rr]eturn"                      . font-lock-warning-face)
-        ;; functions
-        ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
-        ;; variables
-        ("%[^% ]+%"                       . font-lock-variable-name-face)
-        (,ahk-commands-regexp             . font-lock-keyword-face)
-        (,ahk-functions-regexp            . font-lock-function-name-face)
-        (,ahk-directives-regexp           . font-lock-preprocessor-face)
-        (,ahk-variables-regexp            . font-lock-variable-name-face)
-        (,ahk-keys-regexp                 . font-lock-constant-face)
-        (,ahk-operators-regexp . font-lock-builtin-face)
-        ;; note: order matters
-        ))
+(defvar ahk-font-lock-keywords
+  `(("\\s-*;.*$"                      . font-lock-comment-face)
+    ;; lLTrim0 usage
+    ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
+    (,ahk-double-quote-string-re . font-lock-string-face)
+    (,ahk-single-quote-string-re . font-lock-string-face)
+    ;; block comments
+    ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
+    ;; bindings
+    ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
+    ;; labels
+    ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
+    ;; return
+    ("[Rr]eturn"                      . font-lock-warning-face)
+    ;; functions
+    ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
+    ;; variables
+    ("%[^% ]+%"                       . font-lock-variable-name-face)
+    (,ahk-commands-regexp             . font-lock-keyword-face)
+    (,ahk-functions-regexp            . font-lock-function-name-face)
+    (,ahk-directives-regexp           . font-lock-preprocessor-face)
+    (,ahk-variables-regexp            . font-lock-variable-name-face)
+    (,ahk-keys-regexp                 . font-lock-constant-face)
+    (,ahk-operators-regexp . font-lock-builtin-face)
+    ;; note: order matters
+    ))
 
 ;; keyword completion
-(defvar ahk-kwd-list nil "AHK keywords.")
+(defvar ahk-kwd-list (make-hash-table :test 'equal)
+  "AHK keywords.")
 
-(defvar ahk-all-keywords nil "list of all ahk keywords")
-(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
+(defvar ahk-all-keywords (append ahk-commands ahk-functions ahk-variables)
+  "List of all ahk keywords.")
 
-(setq ahk-kwd-list (make-hash-table :test 'equal))
 (mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-commands)
 (mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-functions)
 (mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-directives)
@@ -618,8 +521,6 @@ For details, see `comment-dwim'."
               completions)
           (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no :annotation-function 'ahk-company-annotation)))))
 
-(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
-
 (defun ahk-company-annotation (candidate)
   "Annotate company mode completions based on source."
   (cond
@@ -635,29 +536,23 @@ For details, see `comment-dwim'."
     "k")
    (t "")))
 
-(defvar ac-source-ahk nil
+(defvar ac-source-ahk
+  '((candidates . (all-completions ac-prefix ahk-all-keywords))
+    (limit . nil)
+    (symbol . "f"))
   "Completion for AHK mode")
 
-(defvar ac-source-keys-ahk nil
-      "Completion for AHK keys mode")
+(defvar ac-source-keys-ahk
+  '((candidates . (all-completions ac-prefix ahk-keys))
+    (limit . nil)
+    (symbol . "k"))
+  "Completion for AHK keys mode")
 
-(defvar ac-source-directives-ahk nil
-      "Completion for AHK directives mode")
-
-(setq ac-source-ahk
-      '((candidates . (all-completions ac-prefix ahk-all-keywords))
-        (limit . nil)
-        (symbol . "f")))
-
-(setq ac-source-directives-ahk
-      '((candidates . (all-completions ac-prefix ahk-directives))
-        (limit . nil)
-        (symbol . "d")))
-
-(setq ac-source-keys-ahk
-      '((candidates . (all-completions ac-prefix ahk-keys))
-        (limit . nil)
-        (symbol . "k")))
+(defvar ac-source-directives-ahk
+  '((candidates . (all-completions ac-prefix ahk-directives))
+    (limit . nil)
+    (symbol . "d"))
+  "Completion for AHK directives mode")
 
 ;; clear memory
 ;; (setq ahk-commands nil)
