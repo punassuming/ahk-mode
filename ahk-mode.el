@@ -467,41 +467,40 @@ For details, see `comment-dwim'."
 (defvar ahk-single-quote-string-re "[']\\(\\\\.\\|[^'\n]\\)*[']"
   "Regexp used to match a single-quoted string literal")
 
-(defvar ahk-font-lock-keywords nil )
-(setq ahk-font-lock-keywords
-      `(("\\s-*;.*$"                      . font-lock-comment-face)
-        ;; lLTrim0 usage
-        ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
-        (,ahk-double-quote-string-re . font-lock-string-face)
-        (,ahk-single-quote-string-re . font-lock-string-face)
-        ;; block comments
-        ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
-        ;; bindings
-        ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
-        ;; labels
-        ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
-        ;; return
-        ("[Rr]eturn"                      . font-lock-warning-face)
-        ;; functions
-        ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
-        ;; variables
-        ("%[^% ]+%"                       . font-lock-variable-name-face)
-        (,ahk-commands-regexp             . font-lock-keyword-face)
-        (,ahk-functions-regexp            . font-lock-function-name-face)
-        (,ahk-directives-regexp           . font-lock-preprocessor-face)
-        (,ahk-variables-regexp            . font-lock-variable-name-face)
-        (,ahk-keys-regexp                 . font-lock-constant-face)
-        (,ahk-operators-regexp . font-lock-builtin-face)
-        ;; note: order matters
-        ))
+(defvar ahk-font-lock-keywords
+  `(("\\s-*;.*$"                      . font-lock-comment-face)
+    ;; lLTrim0 usage
+    ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
+    (,ahk-double-quote-string-re . font-lock-string-face)
+    (,ahk-single-quote-string-re . font-lock-string-face)
+    ;; block comments
+    ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
+    ;; bindings
+    ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
+    ;; labels
+    ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
+    ;; return
+    ("[Rr]eturn"                      . font-lock-warning-face)
+    ;; functions
+    ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
+    ;; variables
+    ("%[^% ]+%"                       . font-lock-variable-name-face)
+    (,ahk-commands-regexp             . font-lock-keyword-face)
+    (,ahk-functions-regexp            . font-lock-function-name-face)
+    (,ahk-directives-regexp           . font-lock-preprocessor-face)
+    (,ahk-variables-regexp            . font-lock-variable-name-face)
+    (,ahk-keys-regexp                 . font-lock-constant-face)
+    (,ahk-operators-regexp . font-lock-builtin-face)
+    ;; note: order matters
+    ))
 
 ;; keyword completion
-(defvar ahk-kwd-list nil "AHK keywords.")
+(defvar ahk-kwd-list (make-hash-table :test 'equal)
+  "AHK keywords.")
 
-(defvar ahk-all-keywords nil "list of all ahk keywords")
-(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
+(defvar ahk-all-keywords (append ahk-commands ahk-functions ahk-variables)
+  "List of all ahk keywords.")
 
-(setq ahk-kwd-list (make-hash-table :test 'equal))
 (mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-commands)
 (mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-functions)
 (mapc (lambda (x) (puthash x t ahk-kwd-list)) ahk-directives)
@@ -522,8 +521,6 @@ For details, see `comment-dwim'."
               completions)
           (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no :annotation-function 'ahk-company-annotation)))))
 
-(setq ahk-all-keywords (append ahk-commands ahk-functions ahk-variables))
-
 (defun ahk-company-annotation (candidate)
   "Annotate company mode completions based on source."
   (cond
@@ -539,29 +536,23 @@ For details, see `comment-dwim'."
     "k")
    (t "")))
 
-(defvar ac-source-ahk nil
+(defvar ac-source-ahk
+  '((candidates . (all-completions ac-prefix ahk-all-keywords))
+    (limit . nil)
+    (symbol . "f"))
   "Completion for AHK mode")
 
-(defvar ac-source-keys-ahk nil
+(defvar ac-source-keys-ahk
+  '((candidates . (all-completions ac-prefix ahk-keys))
+    (limit . nil)
+    (symbol . "k"))
   "Completion for AHK keys mode")
 
-(defvar ac-source-directives-ahk nil
+(defvar ac-source-directives-ahk
+  '((candidates . (all-completions ac-prefix ahk-directives))
+    (limit . nil)
+    (symbol . "d"))
   "Completion for AHK directives mode")
-
-(setq ac-source-ahk
-      '((candidates . (all-completions ac-prefix ahk-all-keywords))
-        (limit . nil)
-        (symbol . "f")))
-
-(setq ac-source-directives-ahk
-      '((candidates . (all-completions ac-prefix ahk-directives))
-        (limit . nil)
-        (symbol . "d")))
-
-(setq ac-source-keys-ahk
-      '((candidates . (all-completions ac-prefix ahk-keys))
-        (limit . nil)
-        (symbol . "k")))
 
 ;; clear memory
 ;; (setq ahk-commands nil)
