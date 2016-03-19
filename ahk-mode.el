@@ -456,22 +456,22 @@ Launches autohotkey help in chm file."
       (indent-to indent))
     (when ahk-debug
       (message (format
-              "indent: %s, current: %s previous: %s
+                "indent: %s, current: %s previous: %s
 ob: %s, op: %s, cb: %s, bs: %s,
 if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
-              indent
-              (current-indentation)
-              (ahk-previous-indent)
-              opening-brace
-              opening-paren
-              closing-brace
-              block-skip
-              if-else
-              label
-              keybinding
-              return
-              blank
-              )))))
+                indent
+                (current-indentation)
+                (ahk-previous-indent)
+                opening-brace
+                opening-paren
+                closing-brace
+                block-skip
+                if-else
+                label
+                keybinding
+                return
+                blank
+                )))))
 
 (defun ahk-indent-region (start end)
   (interactive "r")
@@ -619,10 +619,10 @@ For details, see `comment-dwim'."
   "Completion for AHK mode")
 
 (defvar ac-source-keys-ahk nil
-      "Completion for AHK keys mode")
+  "Completion for AHK keys mode")
 
 (defvar ac-source-directives-ahk nil
-      "Completion for AHK directives mode")
+  "Completion for AHK directives mode")
 
 (setq ac-source-ahk
       '((candidates . (all-completions ac-prefix ahk-all-keywords))
