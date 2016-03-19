@@ -179,7 +179,6 @@
 (defvar ahk-mode-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
-    (define-key map (kbd "C-c C-r") #'ahk-lookup-chm)
     (define-key map (kbd "C-c C-?") #'ahk-lookup-web)
     (define-key map (kbd "C-c i") #'ahk-indent-message)
     (define-key map (kbd "C-c C-c") #'ahk-comment-dwim)
@@ -270,17 +269,6 @@ Launches default browser and opens the doc's url."
   (let* ((acap (ahk-command-at-point))
          (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     (browse-url url)))
-
-(defun ahk-lookup-chm ()
-  "Look up current word in AutoHotkey's reference doc.
-Launches autohotkey help in chm file."
-  (interactive)
-  (let* ((acap (ahk-command-at-point))
-         (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
-    ;; v1
-    ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
-    ;; v2
-    (browse-url myurl)))
 
 (defun ahk-version ()
   "Show the `ahk-mode' version in the echo area."
