@@ -123,11 +123,6 @@
   :type 'integer
   :group 'ahk-mode)
 
-(defcustom ahk-user-path nil
-  "Use custom path to autohotkey executable"
-  :type 'string
-  :group 'ahk-mode)
-
 (defcustom ahk-registry "HKEY_CLASSES_ROOT\\AutoHotkeyScript\\Shell\\Open\\Command"
   "Registry location for autohotkey install"
   :type 'string
