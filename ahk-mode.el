@@ -123,28 +123,6 @@
   :type 'integer
   :group 'ahk-mode)
 
-(defcustom ahk-registry "HKEY_CLASSES_ROOT\\AutoHotkeyScript\\Shell\\Open\\Command"
-  "Registry location for autohotkey install"
-  :type 'string
-  :group 'ahk-mode)
-
-(defvar ahk-path
-  (let* ((reg (executable-find "reg"))
-         (reg-data (and reg (shell-command-to-string (format "reg query \"%s\"" ahk-registry)))))
-    (when reg-data
-      (file-name-directory
-       (replace-regexp-in-string "\\\\" "/" (cadr (split-string reg-data "\\\""))))))
-  "Path of installed autohotkey executable")
-
-(defvar ahk-path-exe
-  (and ahk-path (concat ahk-path "AutoHotkey.exe"))
-  "Path of installed autohotkey executable")
-
-(defun ahk-refresh-paths (&optional path)
-  "Refresh authotkey paths, based on PATH to autohotkey directory."
-  (let ((path (or path ahk-path)))
-    (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" )))))
-
 (defvar ahk-debug nil
   "Allows additional output when set to non-nil.")
 
