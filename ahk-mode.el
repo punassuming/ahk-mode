@@ -140,10 +140,6 @@
   (and ahk-path (concat ahk-path "AutoHotkey.exe"))
   "Path of installed autohotkey executable")
 
-(defvar ahk-help-chm
-  (and ahk-path (concat ahk-path "AutoHotkey.chm"))
-  "Path of installed autohotkey help file")
-
 (defvar ahk-spy-exe
   (and ahk-path (concat ahk-path "AU3_Spy.exe"))
   "Path of installed autohotkey help file")
@@ -152,7 +148,6 @@
   "Refresh authotkey paths, based on PATH to autohotkey directory."
   (let ((path (or path ahk-path)))
     (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" ))
-          ahk-help-chm (concat ahk-path "AutoHotkey.chm")
           ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
 
 (defun ahk-installed-p ()
