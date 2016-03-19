@@ -197,42 +197,24 @@
     ["Version" ahk-version]))
 
 ;;; syntax table
-(defvar ahk-mode-syntax-table nil "Syntax table for `ahk-mode'.")
-
-(setq ahk-mode-syntax-table
-      (let ((synTable (make-syntax-table)))
-        ;; these are also allowed in variable names
-        (modify-syntax-entry ?#  "w" synTable)
-        (modify-syntax-entry ?_  "w" synTable)
-        (modify-syntax-entry ?@  "w" synTable)
-        ;; some additional characters used in paths and switches
-        (modify-syntax-entry ?\\  "w" synTable)
-        (modify-syntax-entry ?\;  "< b" synTable)
-        ;; for multiline comments
-        (modify-syntax-entry ?\/  ". 14" synTable)
-        (modify-syntax-entry ?*  ". 23"   synTable)
-        ;; New line
-        (modify-syntax-entry ?\n "> b"  synTable)
-        ;; ` is escape
-        (modify-syntax-entry ?` "\\" synTable)
-        ;; allow single quoted strings
-        ;; (modify-syntax-entry ?' "\"" synTable)
-        ;; the rest is
-        ;; (modify-syntax-entry ?. "." synTable)
-        ;; (modify-syntax-entry ?: "." synTable)
-        ;; (modify-syntax-entry ?- "." synTable)
-        ;; (modify-syntax-entry ?! "." synTable)
-        ;; (modify-syntax-entry ?$ "." synTable)
-        ;; (modify-syntax-entry ?% "." synTable)
-        ;; (modify-syntax-entry ?^ "." synTable)
-        ;; (modify-syntax-entry ?& "." synTable)
-        ;; (modify-syntax-entry ?~ "." synTable)
-        ;; (modify-syntax-entry ?| "." synTable)
-        ;; (modify-syntax-entry ?? "." synTable)
-        ;; (modify-syntax-entry ?< "." synTable)
-        ;; (modify-syntax-entry ?> "." synTable)
-        ;; (modify-syntax-entry ?, "." synTable)
-        synTable))
+(defvar ahk-mode-syntax-table
+  (let ((syntax-table (make-syntax-table)))
+    ;; these are also allowed in variable names
+    (modify-syntax-entry ?#  "w" syntax-table)
+    (modify-syntax-entry ?_  "w" syntax-table)
+    (modify-syntax-entry ?@  "w" syntax-table)
+    ;; some additional characters used in paths and switches
+    (modify-syntax-entry ?\\  "w" syntax-table)
+    (modify-syntax-entry ?\;  "< b" syntax-table)
+    ;; for multiline comments
+    (modify-syntax-entry ?\/  ". 14" syntax-table)
+    (modify-syntax-entry ?*  ". 23"   syntax-table)
+    ;; New line
+    (modify-syntax-entry ?\n "> b"  syntax-table)
+    ;; ` is escape
+    (modify-syntax-entry ?` "\\" syntax-table)
+    syntax-table)
+  "Syntax table for `ahk-mode'.")
 
 ;;; imenu support
 
