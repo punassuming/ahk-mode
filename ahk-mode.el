@@ -180,7 +180,7 @@
   (let ((map (make-sparse-keymap)))
     ;; key bindings
     (define-key map (kbd "C-c C-?") #'ahk-lookup-web)
-    (define-key map (kbd "C-c i") #'ahk-indent-message)
+    (define-key map (kbd "C-c M-i") #'ahk-indent-message)
     (define-key map (kbd "C-c C-c") #'ahk-comment-dwim)
     (define-key map (kbd "C-c C-b") #'ahk-comment-block-dwim)
     (define-key map (kbd "C-c C-k") #'ahk-run-script)
