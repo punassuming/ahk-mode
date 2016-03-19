@@ -145,10 +145,6 @@
   (let ((path (or path ahk-path)))
     (setq ahk-path-exe (and ahk-path (concat ahk-path "AutoHotkey.exe" )))))
 
-(defun ahk-installed-p ()
-  "Predicate function to check existense of autohotkey executable."
-  (and ahk-path-exe (file-exists-p ahk-path-exe)))
-
 (defvar ahk-debug nil
   "Allows additional output when set to non-nil.")
 
