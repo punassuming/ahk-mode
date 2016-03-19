@@ -118,11 +118,6 @@
   :link '(url-link :tag "Github" "https://github.com/ralesi/ahk-mode")
   :link '(emacs-commentary-link :tag "Commentary" "ahk-mode"))
 
-(defcustom ahk-mode-hook '()
-  "Hook functions run by `ahk-mode'."
-  :type 'hook
-  :group 'ahk-mode)
-
 (defcustom ahk-indentation (or tab-width 2)
   "The indentation level."
   :type 'integer
