@@ -6,7 +6,7 @@
 ;; URL: https://github.com/ralesi/ahk-mode
 ;; Version: 1.5.6
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.3"))
 
 ;; Based on work from
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
@@ -113,11 +113,9 @@ buffer-local wherever it is set."
 
 ;;; Requirements
 
-(eval-when-compile
-  (require 'font-lock)
-  (require 'cl-lib)
-  (require 'thingatpt)
-  (require 'rx))
+(require 'font-lock)
+(require 'thingatpt)
+(require 'rx)
 
 (defvar ac-modes)
 (defvar company-tooltip-align-annotations)
@@ -188,7 +186,7 @@ buffer-local wherever it is set."
           ahk-spy-exe (and ahk-path (concat ahk-path "AU3_Spy.exe")))))
 
 (defun ahk-installed-p ()
-  "Predicate function to check existense of autohotkey executable"
+  "Predicate function to check existense of autohotkey executable."
   (and ahk-path-exe (file-exists-p ahk-path-exe)))
 
 (defvar ahk-debug nil
@@ -201,11 +199,12 @@ buffer-local wherever it is set."
 (defvar ahk-mode-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
-    (define-key map (kbd "C-c C-r") 'ahk-lookup-chm)
-    (define-key map (kbd "C-c C-?") 'ahk-lookup-web)
-    (define-key map (kbd "C-c i") 'ahk-indent-message)
-    (define-key map (kbd "C-c C-c") 'ahk-comment-dwim)
-    (define-key map (kbd "C-c C-b") 'ahk-comment-block-dwim)
+    (define-key map (kbd "C-c C-r") #'ahk-lookup-chm)
+    (define-key map (kbd "C-c C-?") #'ahk-lookup-web)
+    (define-key map (kbd "C-c i") #'ahk-indent-message)
+    (define-key map (kbd "C-c C-c") #'ahk-comment-dwim)
+    (define-key map (kbd "C-c C-b") #'ahk-comment-block-dwim)
+    (define-key map (kbd "C-c C-k") #'ahk-run-script)
     map)
   "Keymap for Autohotkey major mode.")
 
@@ -266,40 +265,29 @@ buffer-local wherever it is set."
   "imenu index for `ahk-mode'")
 
 (defun ahk-run-script ()
-  "Run ahk-script"
+  "Run the ahk-script in the current buffer."
   (interactive)
-  (let*
-      ((file (shell-quote-argument
-              (replace-regexp-in-string " " "\ "
-                                        (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
-       (optional-ahk-exe (and (stringp ahk-user-path)
-                              (file-exists-p ahk-user-path)))
-       (ahk-exe-path (shell-quote-argument
-                      (replace-regexp-in-string " " "\ "
-                                                (replace-regexp-in-string "\/" "\\\\"
-                                                                          (if optional-ahk-exe ahk-user-path ahk-path-exe) t t)))))
-    ;; (if (and (stringp ahk-user-path)
-    ;;          (not optional-ahk-exe))
-    ;;     (error "Error: optional-ahk-exe is not found.")
-    (message "Executing script." file)
-    (w32-shell-execute "open" file)
-    ))
+  (let ((file (shell-quote-argument
+               (replace-regexp-in-string " " "\ "
+                                         (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t)))))
+    (message "Executing script %s" file)
+    (w32-shell-execute "open" file)))
 
-(defun ahk-command-prompt ()
-  "Determine command at point, and prompt if nothing found"
-  (let ((myword (or  (if (region-active-p)
+(defun ahk-command-at-point ()
+  "Determine command at point, and prompt if nothing found."
+  (let ((command (or (if (region-active-p)
                          (buffer-substring-no-properties
                           (region-beginning)
                           (region-end))
                        (thing-at-point 'symbol))
                      (read-string "Command: "))))
-    myword))
+    command))
 
 (defun ahk-lookup-web ()
   "Look up current word in AutoHotkey's reference doc.
 Launches default browser and opens the doc's url."
   (interactive)
-  (let* ((acap (ahk-command-prompt))
+  (let* ((acap (ahk-command-at-point))
          (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     (browse-url url)))
 
@@ -307,7 +295,7 @@ Launches default browser and opens the doc's url."
   "Look up current word in AutoHotkey's reference doc.
 Launches autohotkey help in chm file."
   (interactive)
-  (let* ((acap (ahk-command-prompt))
+  (let* ((acap (ahk-command-at-point))
          (myurl (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     ;; v1
     ;; (setq myurl (concat "http://www.autohotkey.com/docs/commands/" myword ".htm" ))
@@ -779,13 +767,13 @@ Key Bindings
   (run-mode-hooks 'ahk-mode-hook))
 
 (when ahk-debug
-  (cl-loop for buffer in (buffer-list) do
-           (with-current-buffer buffer
-             (when (eq major-mode 'ahk-mode)
-               (message "%s" buffer)
-               (font-lock-mode -1)
-               (ahk-mode)
-               ))))
+  (mapc (lambda (buffer)
+          (with-current-buffer buffer
+            (when (eq major-mode 'ahk-mode)
+              (message "%s" buffer)
+              (font-lock-mode -1)
+              (ahk-mode))))
+        (buffer-list)))
 
 (provide 'ahk-mode)
 
