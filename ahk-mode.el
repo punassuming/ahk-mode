@@ -177,8 +177,7 @@
 (defconst ahk-imenu-generic-expression
   '(("Functions"   "^\s*\\(.*\\)(.*)[\n]{" 1)
     ("Labels"      "^\s*\\([^:]+\\):\n" 1)
-    ("Keybindings" "^\s*\\(.+?\\)::" 1)
-    ("Comments"    "^; \\(.+\\)" 1))
+    ("Keybindings" "^\s*\\(.+?\\)::" 1))
   "imenu index for `ahk-mode'")
 
 (defun ahk-run-script ()
