@@ -401,10 +401,8 @@ if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
   (save-excursion
     (goto-char start)
     (while (and (not (eobp)) (< (point) end))
-      (progn
-        (ahk-indent-line)
-        (forward-line 1)
-        ))))
+      (ahk-indent-line)
+      (forward-line 1))))
 
 ;;;; commenting
 
