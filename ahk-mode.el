@@ -110,7 +110,7 @@
 
 ;;; Customization
 
-(defconst ahk-mode-version "1.5.5"
+(defconst ahk-mode-version "1.5.6"
   "Version of `ahk-mode'")
 
 (defgroup ahk-mode nil
@@ -128,6 +128,9 @@
 (defvar ahk-debug nil
   "Allows additional output when set to non-nil.")
 
+(defvar ahk-path nil
+  "Custom path for AutoHotkey executable and related files.")
+
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.ahk\\'"  . ahk-mode))
 
@@ -136,6 +139,7 @@
   (let ((map (make-sparse-keymap)))
     ;; key bindings
     (define-key map (kbd "C-c C-?") #'ahk-lookup-web)
+    (define-key map (kbd "C-c C-r") #'ahk-lookup-chm)
     (define-key map (kbd "C-c M-i") #'ahk-indent-message)
     (define-key map (kbd "C-c C-c") #'ahk-comment-dwim)
     (define-key map (kbd "C-c C-b") #'ahk-comment-block-dwim)
@@ -148,6 +152,7 @@
   "AHK Mode Commands"
   '("AHK"
     ["Lookup webdocs on command" ahk-lookup-web]
+    ["Lookup local documentation on command" ahk-lookup-chm]
     ["Execute script" ahk-run-script]
     "---"
     ["Version" ahk-version]))
@@ -206,6 +211,26 @@ Launches default browser and opens the doc's url."
   (let* ((acap (ahk-command-at-point))
          (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
     (browse-url url)))
+
+(defun ahk-lookup-chm ()
+  "Look up current word in AutoHotkey's reference doc.
+Finds the command in the internal AutoHotkey documentation."
+  (interactive)
+  (let* ((acap (ahk-command-at-point))
+         (chm-path
+          (or (and (file-exists-p "c:/Program Files (x86)/AutoHotkey/AutoHotkey.chm")
+                   "c:/Program Files (x86)/AutoHotkey/AutoHotkey.chm")
+              (and (file-exists-p "c:/Program Files/AutoHotkey/AutoHotkey.chm")
+                   "c:/Program Files/AutoHotkey/AutoHotkey.chm")
+              (and (file-exists-p (concat ahk-path "/AutoHotkey.chm"))
+                   (concat ahk-path "/AutoHotkey.chm")))))
+    (if chm-path
+        (when acap (message "Opening help item for \"%s\"" acap)
+              (w32-shell-execute 1 "hh.exe"
+                                 (format
+                                  "ms-its:%s::/docs/commands/%s.htm"
+                                  chm-path acap)))
+      (message "Help file could not be found, set ahk-path variable."))))
 
 (defun ahk-version ()
   "Show the `ahk-mode' version in the echo area."
