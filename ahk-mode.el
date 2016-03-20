@@ -45,12 +45,12 @@
 ;; - Auto complete - adds options for `company-mode' and `auto-complete-mode'
 
 ;; TODO:
-;; - Movement - move between labels and functions
-;; - Indentation - indent based on current style in ahk-chm
+;; - smart identification of ahk_l and ahk - use chm file
+;; - Indentation - indent based on current style
 ;; - Lookup reference - both on the web and through the installed CHM file
 ;; - Execute scripts - support redirects of error to stdout
-;; - Debugging features
-;; - yasnippets
+;; - Debugging features - work with dgdb.ahk
+;; - add yasnippet support
 
 ;; Notes on indentation
 ;; Indentation is styled with bracing on current line of if / else statements
@@ -88,6 +88,8 @@
 ;; version 1.5.2, 2015-03-07 improved auto complete to work with ac and company-mode
 ;; version 1.5.3, 2015-04-05 improved commenting and added imenu options
 ;; version 1.5.4, 2015-04-06 indentation is working, with bugs
+;; version 1.5.5, 2015-07-20 added load website
+;; version 1.5.6, 2016-03-20 execute script works
 
 ;;; Code:
 
