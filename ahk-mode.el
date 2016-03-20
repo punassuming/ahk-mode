@@ -301,7 +301,6 @@ Launches default browser and opens the doc's url."
       ;; we are now at the previous non-empty /non comment line
       (beginning-of-line)
       ;; default to previous indentation
-      (setq str (substring-no-properties (current-line)))
       (cond
        (block-skip
         nil)
