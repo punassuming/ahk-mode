@@ -473,8 +473,12 @@ For details, see `comment-dwim'."
   '("Alt" "AltDown" "AltTab" "AltTabAndMenu" "AltTabMenu" "AltTabMenuDismiss" "AltUp" "AppsKey" "BS" "BackSpace" "Browser_Back" "Browser_Favorites" "Browser_Forward" "Browser_Home" "Browser_Refresh" "Browser_Search" "Browser_Stop" "CapsLock" "Control" "Ctrl" "CtrlBreak" "CtrlDown" "CtrlUp" "Del" "Delete" "Down" "End" "Enter" "Esc" "Escape" "F1" "F10" "F11" "F12" "F13" "F14" "F15" "F16" "F17" "F18" "F19" "F2" "F20" "F21" "F22" "F23" "F24" "F3" "F4" "F5" "F6" "F7" "F8" "F9" "Home" "Ins" "Insert" "Joy1" "Joy10" "Joy11" "Joy12" "Joy13" "Joy14" "Joy15" "Joy16" "Joy17" "Joy18" "Joy19" "Joy2" "Joy20" "Joy21" "Joy22" "Joy23" "Joy24" "Joy25" "Joy26" "Joy27" "Joy28" "Joy29" "Joy3" "Joy30" "Joy31" "Joy32" "Joy4" "Joy5" "Joy6" "Joy7" "Joy8" "Joy9" "JoyAxes" "JoyButtons" "JoyInfo" "JoyName" "JoyPOV" "JoyR" "JoyU" "JoyV" "JoyX" "JoyY" "JoyZ" "LAlt" "LButton" "LControl" "LCtrl" "LShift" "LWin" "LWinDown" "LWinUp" "Launch_App1" "Launch_App2" "Launch_Mail" "Launch_Media" "Left" "MButton" "Media_Next" "Media_Play_Pause" "Media_Prev" "Media_Stop" "NumLock" "Numpad0" "Numpad1" "Numpad2" "Numpad3" "Numpad4" "Numpad5" "Numpad6" "Numpad7" "Numpad8" "Numpad9" "NumpadAdd" "NumpadClear" "NumpadDel" "NumpadDiv" "NumpadDot" "NumpadDown" "NumpadEnd" "NumpadEnter" "NumpadHome" "NumpadIns" "NumpadLeft" "NumpadMult" "NumpadPgdn" "NumpadPgup" "NumpadRight" "NumpadSub" "NumpadUp" "PGDN" "PGUP" "Pause" "PrintScreen" "RAlt" "RButton" "RControl" "RCtrl" "RShift" "RWin" "RWinDown" "RWinUp" "Right" "ScrollLock" "Shift" "ShiftDown" "ShiftUp" "Space" "Tab" "Up" "Volume_Down" "Volume_Mute" "Volume_Up" "WheelDown" "WheelLeft" "WheelRight" "WheelUp" "XButton1" "XButton2")
   "AHK keywords for keys.")
 
+(defvar ahk-operator-words
+  '("AND" "NOT" "OR")
+  "AHK operator words.")
+
 (defvar ahk-operators
-  '("\\!" "!=" "&" "&&" "&=" "*" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." "." ".=" "/" "//" "//=" "/=" ":=" "<" "<<" "<<=" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" "AND" "NOT" "OR" "^" "^=" "|" "|=" "||" "~" "~=" ",")
+  '("\\!" "!=" "&" "&&" "&=" "*" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." "." ".=" "/" "//" "//=" "/=" ":=" "<" "<<" "<<=" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" "^" "^=" "|" "|=" "||" "~" "~=" ",")
   "AHK operators.")
 
 (defvar ahk-commands-regexp (regexp-opt ahk-commands 'words))
@@ -482,6 +486,7 @@ For details, see `comment-dwim'."
 (defvar ahk-directives-regexp (regexp-opt ahk-directives 'words))
 (defvar ahk-variables-regexp (regexp-opt ahk-variables 'words))
 (defvar ahk-keys-regexp (regexp-opt ahk-keys 'words))
+(defvar ahk-operator-words-regexp (regexp-opt ahk-operator-words 'words))
 (defvar ahk-operators-regexp (regexp-opt ahk-operators))
 
 (defvar ahk-double-quote-string-re "[\"]\\(\\\\.\\|[^\"\n]\\)*[\"]"
@@ -503,7 +508,7 @@ For details, see `comment-dwim'."
     ;; labels
     ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
     ;; return
-    ("[Rr]eturn"                      . font-lock-warning-face)
+    ("\\<\\([Rr]eturn\\)\\>"          . font-lock-warning-face)
     ;; functions
     ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
     ;; variables
@@ -513,6 +518,7 @@ For details, see `comment-dwim'."
     (,ahk-directives-regexp           . font-lock-preprocessor-face)
     (,ahk-variables-regexp            . font-lock-variable-name-face)
     (,ahk-keys-regexp                 . font-lock-constant-face)
+    (,ahk-operator-words-regexp       . font-lock-builtin-face)
     (,ahk-operators-regexp . font-lock-builtin-face)
     ;; note: order matters
     ))
