@@ -438,7 +438,7 @@ WaitClose
 WantCtrlA
 WantF2
 WantReturn
-While-loop
+While
 WinActivate
 WinActivateBottom
 WinClose
