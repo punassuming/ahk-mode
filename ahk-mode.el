@@ -180,9 +180,11 @@
 ;;; imenu support
 
 (defconst ahk-imenu-generic-expression
-  '(("Functions"   "^\s*\\(.*\\)(.*)[\n]{" 1)
-    ("Labels"      "^\s*\\([^:]+\\):\n" 1)
-    ("Keybindings" "^\s*\\(.+?\\)::" 1))
+  '(("Functions"   "^[ \t]*\\([^ ]+\\)(.*)[\n]{" 1)
+    ("Labels"      "^[ \t]*\\([^:;]+\\):\n" 1)
+    ("Keybindings" "^[ \t]*\\([^;: \t\r\n\v\f].*?\\)::" 1)
+    ("Hotstrings" "^[ \t]*\\(:.*?:.*?::\\)" 1)
+    ("Comments"    "^;imenu \\(.+\\)" 1))
   "imenu index for `ahk-mode'")
 
 (defun ahk-run-script ()
