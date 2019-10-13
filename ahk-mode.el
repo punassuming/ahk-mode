@@ -12,9 +12,17 @@
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
 ;; ahk-mode - Author:   Robert Widhopf-Fenk
 
-;; You can redistribute this program and/or modify it under the terms of the GNU
-;; General Public License as published by the Free Software Foundation; either
-;; GPL version 2 or 3.
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or version 2.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; For a full copy of the GNU General Public License
+;; see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
