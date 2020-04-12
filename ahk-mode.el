@@ -384,6 +384,9 @@ Finds the command in the internal AutoHotkey documentation."
         (and
          (setq prev-single t)
          (setq indent (+ indent ahk-indentation))))
+       ((looking-at "^[ \t]*,[^\n]+[}]$")  ; last line of a multi-line list
+         (setq indent (- indent ahk-indentation)))
+
        ;; (return
        ;;  (setq indent (- indent ahk-indentation)))
        ;; subtract indentation if closing bracket only
