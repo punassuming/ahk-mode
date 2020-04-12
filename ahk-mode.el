@@ -378,7 +378,7 @@ Finds the command in the internal AutoHotkey documentation."
              (not block-skip)
              ;; (or if-else loop)
              (or
-              (looking-at "^[ \t]*\\([Ll]oop\\)[^{=\n]*")
+              (looking-at "^[ \t]*\\([Ll]oop\\)[^{=]*\n")
               (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)[^{]*\n"))
              )
         (and
@@ -399,8 +399,8 @@ Finds the command in the internal AutoHotkey documentation."
              (not block-skip)
              (not empty-brace)
              (or
-              (looking-at "^[ \t]*\\([Ll]oop\\)[^{\n]+")
-              (looking-at "^\\([ 	]*\\)\\([iI]f\\|[eE]lse\\)[^{\n]+")))
+              (looking-at "^[ \t]*\\([Ll]oop\\)[^{]+\n")
+              (looking-at "^\\([ \t]*\\)\\([iI]f\\|[eE]lse\\)[^{]+\n")))
         ;; adjust when stacking multiple single line commands
         (setq indent (- indent (if prev-single (- (* 2 ahk-indentation)) 0) ahk-indentation)))
       )
