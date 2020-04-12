@@ -344,9 +344,9 @@ Finds the command in the internal AutoHotkey documentation."
         (setq indent 0))
        (closing-brace
         (setq indent (- indent ahk-indentation)))
-       ;; if beginning with a comment, indent based on previous line
+       ;; if beginning with a comment, take its indentation
        ((looking-at "^\\([ \t]*\\);")
-        (setq indent (ahk-previous-indent)))
+        nil)
        ;; keybindings
        ((and (looking-at "^[ \t]*[^:\n ]+:$")
              (not label))
