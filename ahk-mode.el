@@ -199,8 +199,7 @@
   "Run the ahk-script in the current buffer."
   (interactive)
   (let ((file (shell-quote-argument
-               (replace-regexp-in-string " " "\ "
-                                         (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t)))))
+	  (replace-regexp-in-string "\/" "\\\\" (buffer-file-name) t t))))
     (message "Executing script %s" file)
     (w32-shell-execute "open" file)))
 
