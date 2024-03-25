@@ -219,7 +219,7 @@
 Launches default browser and opens the doc's url."
   (interactive)
   (let* ((acap (ahk-command-at-point))
-         (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
+         (url (concat "http://autohotkey.com/docs/commands/" acap ".htm")))
     (browse-url url)))
 
 (defun ahk-lookup-chm ()
