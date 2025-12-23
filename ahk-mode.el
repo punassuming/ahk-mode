@@ -4,9 +4,9 @@
 
 ;; Author: Rich Alesi
 ;; URL: https://github.com/ralesi/ahk-mode
-;; Version: 1.5.6
+;; Version: 1.6.0
 ;; Keywords: ahk, AutoHotkey, hotkey, keyboard shortcut, automation
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "26.1"))
 
 ;; Based on work from
 ;; xahk-mode - Author:   Xah Lee ( http://xahlee.org/ ) - 2012
@@ -46,11 +46,22 @@
 ;;; FEATURES
 
 ;; When opening a script file you will get:
-;; - syntax highlighting
+;; - syntax highlighting (for both AutoHotkey v1 and v2)
 ;; - Commenting - provide functions for block and standard commenting
 ;; - Imenu - jump to a function / label within a buffer
 ;; - Execute scripts
 ;; - Auto complete - adds options for `company-mode' and `auto-complete-mode'
+
+;;; CONFIGURATION
+
+;; To use AutoHotkey v2 syntax, set the variable ahk-syntax-version:
+;;   (setq ahk-syntax-version 'v2)
+;; 
+;; Or set it per-file using file-local variables:
+;;   ;; -*- mode: ahk-mode; ahk-syntax-version: v2; -*-
+;;
+;; Or per-directory using .dir-locals.el:
+;;   ((ahk-mode . ((ahk-syntax-version . v2))))
 
 ;; TODO:
 ;; - smart identification of ahk_l and ahk - use chm file
@@ -118,7 +129,7 @@
 
 ;;; Customization
 
-(defconst ahk-mode-version "1.5.6"
+(defconst ahk-mode-version "1.6.0"
   "Version of `ahk-mode'")
 
 (defgroup ahk-mode nil
@@ -127,6 +138,16 @@
   :prefix "ahk-"
   :link '(url-link :tag "Github" "https://github.com/ralesi/ahk-mode")
   :link '(emacs-commentary-link :tag "Commentary" "ahk-mode"))
+
+(defcustom ahk-syntax-version 'v1
+  "AutoHotkey syntax version to use for highlighting and completion.
+Can be either \\='v1 for AutoHotkey v1.x or \\='v2 for AutoHotkey v2.x.
+Set this as a file-local variable or directory-local variable to choose
+the version per file or project."
+  :type '(choice (const :tag "AutoHotkey v1" v1)
+                 (const :tag "AutoHotkey v2" v2))
+  :safe 'symbolp
+  :group 'ahk-mode)
 
 (defcustom ahk-indentation (or tab-width 2)
   "The indentation level."
@@ -219,7 +240,10 @@
 Launches default browser and opens the doc's url."
   (interactive)
   (let* ((acap (ahk-command-at-point))
-         (url (concat "http://ahkscript.org/docs/commands/" acap ".htm")))
+         (base-url (if (eq ahk-syntax-version 'v2)
+                       "https://www.autohotkey.com/docs/v2/lib/"
+                     "https://www.autohotkey.com/docs/commands/"))
+         (url (concat base-url acap ".htm")))
     (browse-url url)))
 
 (defun ahk-lookup-chm ()
@@ -494,6 +518,74 @@ For details, see `comment-dwim'."
   '("\\!" "!=" "&" "&&" "&=" "*" "**" "*=" "+" "++" "+=" "-" "--" "-=" "." "." ".=" "/" "//" "//=" "/=" ":=" "<" "<<" "<<=" "<=" "<>" "=" "==" ">" ">=" ">>" ">>=" "?:" "^" "^=" "|" "|=" "||" "~" "~=" ",")
   "AHK operators.")
 
+;; AutoHotkey v2 keywords
+(defvar ahk-v2-functions
+  '("Abs" "ACos" "Array" "ASin" "ATan" "BlockInput" "Ceil" "Chr" "Click" "ClipWait" "ComObjActive" "ComObjArray" "ComObjConnect" "ComObjCreate" "ComObject" "ComObjError" "ComObjFlags" "ComObjGet" "ComObjQuery" "ComObjType" "ComObjValue" "Control" "ControlClick" "ControlFocus" "ControlGet" "ControlGetFocus" "ControlGetPos" "ControlGetText" "ControlMove" "ControlSend" "ControlSendRaw" "ControlSetText" "CoordMode" "Cos" "Critical" "DateAdd" "DateDiff" "Deref" "DetectHiddenText" "DetectHiddenWindows" "DirCopy" "DirCreate" "DirDelete" "DirExist" "DirMove" "DirSelect" "DllCall" "Download" "Drive" "DriveGet" "Edit" "EnvGet" "EnvSet" "Exception" "Exit" "ExitApp" "Exp" "FileAppend" "FileCopy" "FileCreateShortcut" "FileDelete" "FileEncoding" "FileExist" "FileGetAttrib" "FileGetShortcut" "FileGetSize" "FileGetTime" "FileGetVersion" "FileInstall" "FileMove" "FileOpen" "FileRead" "FileRecycle" "FileRecycleEmpty" "FileSelect" "FileSetAttrib" "FileSetTime" "Floor" "FormatTime" "Func" "GetKeyName" "GetKeySC" "GetKeyState" "GetKeyVK" "GroupActivate" "GroupAdd" "GroupClose" "GroupDeactivate" "Gui" "GuiControl" "GuiControlGet" "Hotkey" "IL_Add" "IL_Create" "IL_Destroy" "ImageSearch" "IniDelete" "IniRead" "IniWrite" "Input" "InputBox" "InStr" "IsByRef" "IsFunc" "IsLabel" "IsObject" "KeyHistory" "KeyWait" "ListHotkeys" "ListLines" "ListVars" "Ln" "Log" "LTrim" "LV_Add" "LV_Delete" "LV_DeleteCol" "LV_GetCount" "LV_GetNext" "LV_GetText" "LV_Insert" "LV_InsertCol" "LV_Modify" "LV_ModifyCol" "LV_SetImageList" "Menu" "MenuSelect" "Mod" "MonitorGet" "MonitorGetCount" "MonitorGetName" "MonitorGetPrimary" "MonitorGetWorkArea" "MouseClick" "MouseClickDrag" "MouseGetPos" "MouseMove" "MsgBox" "NumGet" "NumPut" "ObjAddRef" "ObjClone" "Object" "ObjGetAddress" "ObjGetCapacity" "ObjHasKey" "ObjInsert" "ObjMaxIndex" "ObjMinIndex" "ObjNewEnum" "ObjRelease" "ObjRemove" "ObjSetCapacity" "OnMessage" "Ord" "OutputDebug" "PixelGetColor" "PixelSearch" "PostMessage" "ProcessClose" "ProcessExist" "ProcessList" "ProcessSetPriority" "ProcessWait" "ProcessWaitClose" "Random" "RegDelete" "RegExMatch" "RegExReplace" "RegisterCallback" "RegRead" "RegWrite" "Reload" "Round" "RTrim" "Run" "RunAs" "RunWait" "SB_SetIcon" "SB_SetParts" "SB_SetText" "Send" "SendEvent" "SendInput" "SendLevel" "SendMessage" "SendMode" "SendPlay" "SendRaw" "SetCapsLockState" "SetControlDelay" "SetDefaultMouseSpeed" "SetKeyDelay" "SetMouseDelay" "SetNumLockState" "SetRegView" "SetScrollLockState" "SetStoreCapsLockMode" "SetTimer" "SetTitleMatchMode" "SetWinDelay" "SetWorkingDir" "Shutdown" "Sin" "Sleep" "Sort" "SoundBeep" "SoundGet" "SoundPlay" "SoundSet" "SplitPath" "Sqrt" "StatusBarGetText" "StatusBarWait" "StrGet" "StringCaseSense" "StrLen" "StrLower" "StrPut" "StrReplace" "StrSplit" "StrUpper" "SubStr" "SysGet" "Tan" "Thread" "ToolTip" "TrayTip" "Trim" "TV_Add" "TV_Delete" "TV_Get" "TV_GetChild" "TV_GetCount" "TV_GetNext" "TV_GetParent" "TV_GetPrev" "TV_GetSelection" "TV_GetText" "TV_Modify" "TV_SetImageList" "Type" "VarSetCapacity" "WinActivate" "WinActivateBottom" "WinActive" "WinClose" "WinExist" "WinGetClass" "WinGetControls" "WinGetControlsHwnd" "WinGetCount" "WinGetExStyle" "WinGetID" "WinGetIDLast" "WinGetList" "WinGetMinMax" "WinGetPID" "WinGetPos" "WinGetProcessName" "WinGetProcessPath" "WinGetStyle" "WinGetText" "WinGetTitle" "WinGetTransColor" "WinGetTransparent" "WinHide" "WinKill" "WinMaximize" "WinMinimize" "WinMinimizeAll" "WinMinimizeAllUndo" "WinMove" "WinMoveBottom" "WinMoveTop" "WinRedraw" "WinRestore" "WinSetAlwaysOnTop" "WinSetEnabled" "WinSetExStyle" "WinSetRegion" "WinSetStyle" "WinSetTitle" "WinSetTransColor" "WinSetTransparent" "WinShow" "WinWait" "WinWaitActive" "WinWaitClose" "WinWaitNotActive")
+  "AHK v2 built-in functions.")
+
+(defvar ahk-v2-variables
+  '("A_AhkPath" "A_AhkVersion" "A_AppData" "A_AppDataCommon" "A_Args" "A_CaretX" "A_CaretY" "A_ComputerName" "A_ComSpec" "A_ControlDelay" "A_Cursor" "A_DD" "A_DDD" "A_DDDD" "A_DefaultMouseSpeed" "A_Desktop" "A_DesktopCommon" "A_DetectHiddenText" "A_DetectHiddenWindows" "A_EndChar" "A_EventInfo" "A_ExitReason" "A_FileEncoding" "A_FormatFloat" "A_FormatInteger" "A_Gui" "A_GuiControl" "A_GuiControlEvent" "A_GuiEvent" "A_GuiHeight" "A_GuiWidth" "A_GuiX" "A_GuiY" "A_Hour" "A_IconFile" "A_IconHidden" "A_IconNumber" "A_IconTip" "A_Index" "A_InitialWorkingDir" "A_IPAddress1" "A_IPAddress2" "A_IPAddress3" "A_IPAddress4" "A_Is64bitOS" "A_IsAdmin" "A_IsCompiled" "A_IsCritical" "A_IsPaused" "A_IsSuspended" "A_IsUnicode" "A_KeyDelay" "A_Language" "A_LastError" "A_LineFile" "A_LineNumber" "A_LoopField" "A_LoopFileAttrib" "A_LoopFileDir" "A_LoopFileExt" "A_LoopFileFullPath" "A_LoopFileName" "A_LoopFilePath" "A_LoopFileShortName" "A_LoopFileShortPath" "A_LoopFileSize" "A_LoopFileSizeKB" "A_LoopFileSizeMB" "A_LoopFileTimeAccessed" "A_LoopFileTimeCreated" "A_LoopFileTimeModified" "A_LoopReadLine" "A_LoopRegKey" "A_LoopRegName" "A_LoopRegSubkey" "A_LoopRegTimeModified" "A_LoopRegType" "A_MDAY" "A_Min" "A_MM" "A_MMM" "A_MMMM" "A_Mon" "A_MouseDelay" "A_MSec" "A_MsgBoxResult" "A_MyDocuments" "A_Now" "A_NowUTC" "A_OSVersion" "A_PriorHotkey" "A_PriorKey" "A_ProgramFiles" "A_Programs" "A_ProgramsCommon" "A_PtrSize" "A_RegView" "A_ScreenDPI" "A_ScreenHeight" "A_ScreenWidth" "A_ScriptDir" "A_ScriptFullPath" "A_ScriptHwnd" "A_ScriptName" "A_Sec" "A_Space" "A_StartMenu" "A_StartMenuCommon" "A_Startup" "A_StartupCommon" "A_StringCaseSense" "A_Tab" "A_Temp" "A_ThisFunc" "A_ThisHotkey" "A_ThisLabel" "A_ThisMenu" "A_ThisMenuItem" "A_ThisMenuItemPos" "A_TickCount" "A_TimeIdle" "A_TimeIdlePhysical" "A_TimeSincePriorHotkey" "A_TimeSinceThisHotkey" "A_TitleMatchMode" "A_TitleMatchModeSpeed" "A_UserName" "A_WDay" "A_WinDelay" "A_WinDir" "A_WorkingDir" "A_YDay" "A_Year" "A_YWeek" "A_YYYY" "Base" "Clipboard" "ClipboardAll" "ErrorLevel" "False" "This" "True")
+  "AHK v2 built-in variables.")
+
+(defvar ahk-v2-flow-control
+  '("if" "else" "loop" "while" "until" "for" "try" "catch" "throw" "finally" "return" "class" "break" "continue" "gosub" "goto" "static" "global" "local" "var")
+  "AHK v2 flow of control keywords.")
+
+(defvar ahk-v2-operator-words
+  '("and" "or" "not" "is" "contains" "in" "extends" "new")
+  "AHK v2 operator words.")
+
+(defvar ahk-v2-directives
+  '("#ClipboardTimeout" "#DllLoad" "#ErrorStdOut" "#HotIf" "#HotIfTimeout" "#Hotstring" "#Include" "#InputLevel" "#MaxThreads" "#MaxThreadsBuffer" "#MaxThreadsPerHotkey" "#NoTrayIcon" "#Requires" "#SingleInstance" "#SuspendExempt" "#Warn" "#WinActivateForce")
+  "AHK v2 directives.")
+
+;; Helper functions to get keywords based on version
+(defun ahk--get-commands ()
+  "Get command keywords for current AHK version."
+  (if (eq ahk-syntax-version 'v2)
+      ;; v2 uses functions, not commands
+      nil
+    ahk-commands))
+
+(defun ahk--get-functions ()
+  "Get function keywords for current AHK version."
+  (if (eq ahk-syntax-version 'v2)
+      ahk-v2-functions
+    ahk-functions))
+
+(defun ahk--get-variables ()
+  "Get variable keywords for current AHK version."
+  (if (eq ahk-syntax-version 'v2)
+      ahk-v2-variables
+    ahk-variables))
+
+(defun ahk--get-directives ()
+  "Get directive keywords for current AHK version."
+  (if (eq ahk-syntax-version 'v2)
+      ahk-v2-directives
+    ahk-directives))
+
+(defun ahk--get-flow-control ()
+  "Get flow control keywords for current AHK version."
+  (if (eq ahk-syntax-version 'v2)
+      ahk-v2-flow-control
+    nil))
+
+(defun ahk--get-operator-words ()
+  "Get operator word keywords for current AHK version."
+  (if (eq ahk-syntax-version 'v2)
+      ahk-v2-operator-words
+    ahk-operator-words))
+
+(defun ahk--get-all-keywords ()
+  "Get all keywords for current AHK version."
+  (append (ahk--get-commands)
+          (ahk--get-functions)
+          (ahk--get-variables)
+          (ahk--get-directives)
+          (ahk--get-flow-control)
+          ahk-keys))
+
 (defvar ahk-commands-regexp (regexp-opt ahk-commands 'words))
 (defvar ahk-functions-regexp (regexp-opt ahk-functions 'words))
 (defvar ahk-directives-regexp (regexp-opt ahk-directives 'words))
@@ -508,33 +600,57 @@ For details, see `comment-dwim'."
 (defvar ahk-single-quote-string-re "[']\\(\\\\.\\|[^'\n]\\)*[']"
   "Regexp used to match a single-quoted string literal")
 
-(defvar ahk-font-lock-keywords
-  `(("\\s-*;.*$"                      . font-lock-comment-face)
-    ;; lLTrim0 usage
-    ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
-    (,ahk-double-quote-string-re . font-lock-string-face)
-    (,ahk-single-quote-string-re . font-lock-string-face)
-    ;; block comments
-    ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
-    ;; bindings
-    ("^\\([^\t\n:=]+\\)::"            . (1 font-lock-constant-face))
-    ;; labels
-    ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
-    ;; return
-    ("\\<\\([Rr]eturn\\)\\>"          . font-lock-warning-face)
-    ;; functions
-    ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
-    ;; variables
-    ("%[^% ]+%"                       . font-lock-variable-name-face)
-    (,ahk-commands-regexp             . font-lock-keyword-face)
-    (,ahk-functions-regexp            . font-lock-function-name-face)
-    (,ahk-directives-regexp           . font-lock-preprocessor-face)
-    (,ahk-variables-regexp            . font-lock-variable-name-face)
-    (,ahk-keys-regexp                 . font-lock-constant-face)
-    (,ahk-operator-words-regexp       . font-lock-builtin-face)
-    (,ahk-operators-regexp . font-lock-builtin-face)
-    ;; note: order matters
-    ))
+(defun ahk--make-font-lock-keywords ()
+  "Create font-lock keywords based on current AHK version."
+  (let* ((commands (ahk--get-commands))
+         (functions (ahk--get-functions))
+         (directives (ahk--get-directives))
+         (variables (ahk--get-variables))
+         (flow-control (ahk--get-flow-control))
+         (operator-words (ahk--get-operator-words))
+         (commands-regexp (when commands (regexp-opt commands 'words)))
+         (functions-regexp (regexp-opt functions 'words))
+         (directives-regexp (regexp-opt directives 'words))
+         (variables-regexp (regexp-opt variables 'words))
+         (flow-control-regexp (when flow-control (regexp-opt flow-control 'words)))
+         (operator-words-regexp (regexp-opt operator-words 'words)))
+    `(("\\s-*;.*$"                      . font-lock-comment-face)
+      ;; lLTrim0 usage
+      ("(LTrim0\\(.*\n\\)+"            . font-lock-string-face)
+      (,ahk-double-quote-string-re . font-lock-string-face)
+      (,ahk-single-quote-string-re . font-lock-string-face)
+      ;; block comments
+      ("^/\\*\\(.*\r?\n\\)*\\(\\*/\\)?" . font-lock-comment-face)
+      ;; bindings (v2 uses braces)
+      ,(if (eq ahk-syntax-version 'v2)
+           '("^\\([^\t\n:=]+\\)::\\s-*{" . (1 font-lock-constant-face))
+         '("^\\([^\t\n:=]+\\)::" . (1 font-lock-constant-face)))
+      ;; labels
+      ("^\\([^\t\n :=]+\\):[^=]"        . (1 font-lock-doc-face))
+      ;; return
+      ("\\<\\([Rr]eturn\\)\\>"          . font-lock-warning-face)
+      ;; functions
+      ("^\\([^\t\n (]+\\)\\((.*)\\)"    . (1 font-lock-function-name-face))
+      ;; variables (v1 uses %var%, v2 doesn't)
+      ,@(if (eq ahk-syntax-version 'v1)
+            '(("%[^% ]+%" . font-lock-variable-name-face))
+          nil)
+      ;; v2 assignment operator
+      ,@(if (eq ahk-syntax-version 'v2)
+            '((":=" . font-lock-builtin-face))
+          nil)
+      ,@(when commands-regexp
+          `((,commands-regexp . font-lock-keyword-face)))
+      (,functions-regexp . font-lock-function-name-face)
+      (,directives-regexp . font-lock-preprocessor-face)
+      (,variables-regexp . font-lock-variable-name-face)
+      (,ahk-keys-regexp . font-lock-constant-face)
+      ,@(when flow-control-regexp
+          `((,flow-control-regexp . font-lock-keyword-face)))
+      (,operator-words-regexp . font-lock-builtin-face)
+      (,ahk-operators-regexp . font-lock-builtin-face)
+      ;; note: order matters
+      )))
 
 ;; keyword completion
 (defvar ahk-kwd-list (make-hash-table :test 'equal)
@@ -553,7 +669,8 @@ For details, see `comment-dwim'."
 (defun ahk-completion-at-point ()
   "Complete the current work using the list of all syntax's."
   (interactive)
-  (let ((pt (point)))
+  (let ((pt (point))
+        (all-keywords (ahk--get-all-keywords)))
     (if (and (or (save-excursion (re-search-backward "\\<\\w+"))
                  (looking-at "\\<\\w+"))
              (= (match-end 0) pt))
@@ -561,25 +678,32 @@ For details, see `comment-dwim'."
               (prefix (match-string 0))
               (completion-ignore-case t)
               completions)
-          (list start pt (all-completions prefix ahk-all-keywords) :exclusive 'no :annotation-function 'ahk-company-annotation)))))
+          (list start pt (all-completions prefix all-keywords) :exclusive 'no :annotation-function 'ahk-company-annotation)))))
 
 (defun ahk-company-annotation (candidate)
   "Annotate company mode completions based on source."
-  (cond
-   ((member candidate ahk-commands)
-    "c")
-   ((member candidate ahk-functions)
-    "f")
-   ((member candidate ahk-variables)
-    "v")
-   ((member candidate ahk-directives)
-    "d")
-   ((member candidate ahk-keys)
-    "k")
-   (t "")))
+  (let ((commands (ahk--get-commands))
+        (functions (ahk--get-functions))
+        (variables (ahk--get-variables))
+        (directives (ahk--get-directives))
+        (flow-control (ahk--get-flow-control)))
+    (cond
+     ((and commands (member candidate commands))
+      "c")
+     ((member candidate functions)
+      "f")
+     ((member candidate variables)
+      "v")
+     ((member candidate directives)
+      "d")
+     ((member candidate ahk-keys)
+      "k")
+     ((and flow-control (member candidate flow-control))
+      "kw")
+     (t ""))))
 
 (defvar ac-source-ahk
-  '((candidates . (all-completions ac-prefix ahk-all-keywords))
+  '((candidates . (all-completions ac-prefix (ahk--get-all-keywords)))
     (limit . nil)
     (symbol . "f"))
   "Completion for AHK mode")
@@ -591,7 +715,7 @@ For details, see `comment-dwim'."
   "Completion for AHK keys mode")
 
 (defvar ac-source-directives-ahk
-  '((candidates . (all-completions ac-prefix ahk-directives))
+  '((candidates . (all-completions ac-prefix (ahk--get-directives)))
     (limit . nil)
     (symbol . "d"))
   "Completion for AHK directives mode")
@@ -635,13 +759,7 @@ The hook functions in `ahk-mode-hook' are run after mode initialization.
 
 Key Bindings
 \\{ahk-mode-map}"
-  (kill-all-local-variables)
-
   (set-syntax-table ahk-mode-syntax-table)
-
-  (setq major-mode 'ahk-mode
-        mode-name "AHK"
-        local-abbrev-table ahk-mode-abbrev-table)
 
   ;; ui
   (use-local-map ahk-mode-map)
@@ -651,19 +769,12 @@ Key Bindings
   (setq-local imenu-generic-expression ahk-imenu-generic-expression)
   (setq-local imenu-sort-function 'imenu--sort-by-position)
 
-  ;; font-lock
-  (make-local-variable 'font-lock-defaults)
-  (setq font-lock-defaults '((ahk-font-lock-keywords) nil t))
-  ;; (set (make-local-variable 'font-lock-multiline) t)
-  ;; (add-hook 'font-lock-extend-region-functions
-  ;;           'ahk-font-lock-extend-region)
-  ;; (setq syntax-propertize-function)
+  ;; font-lock - use dynamic keywords based on version
+  (setq-local font-lock-defaults
+              '((ahk--make-font-lock-keywords) nil t))
 
-  ;; clear memory
-  ;; (setq ahk-commands-regexp nil)
-  ;; (setq ahk-functions-regexp nil)
-  ;; (setq ahk-variables-regexp nil)
-  ;; (setq ahk-keys-regexp nil)
+  ;; Update mode name to show version
+  (setq mode-name (concat "AHK" (if (eq ahk-syntax-version 'v2) "-v2" "-v1")))
 
   (if (boundp 'evil-shift-width)
       (setq-local evil-shift-width ahk-indentation))
