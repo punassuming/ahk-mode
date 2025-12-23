@@ -118,6 +118,9 @@
 (require 'thingatpt)
 (require 'rx)
 
+;; Declare Windows-specific functions to suppress warnings
+(declare-function w32-shell-execute "w32fns.c")
+
 (defvar ac-modes)
 (defvar company-tooltip-align-annotations)
 
@@ -317,14 +320,15 @@ Finds the command in the internal AutoHotkey documentation."
   (interactive)
   (let ((indent 0)
         (opening-brace nil)
-        (else nil)
+        (opening-paren nil)
         (label nil)
         (closing-brace nil)
-        (loop nil)
         (prev-single nil)
-        (return nil)
         (empty-brace nil)
         (block-skip nil)
+        (if-else nil)
+        (keybinding nil)
+        (blank nil)
         (case-fold-search t))
     ;; do a backward search to determine the indentation level
     (save-excursion
@@ -333,15 +337,15 @@ Finds the command in the internal AutoHotkey documentation."
       (setq opening-brace      (looking-at "^[ \t]*{[^}]"))
       (setq opening-paren      (looking-at "^[ \t]*([^)]"))
       (setq if-else            (looking-at "^[ \t]*\\([iI]f\\|[Ee]lse\\)"))
-      (setq loop               (looking-at "^[ \t]*\\([Ll]oop\\)[^{]+"))
+      ;; loop, return, else, prev are computed but not currently used
+      ;; (setq loop               (looking-at "^[ \t]*\\([Ll]oop\\)[^{]+"))
       (setq closing-brace      (looking-at "^[ \t]*\\([)}]\\|\\*\\/\\)"))  ; no "$" for the case of "} else {"
       (setq label              (looking-at "^[ \t]*[^:\n ]+:$"))
       (setq keybinding         (looking-at "^[ \t]*[^:\n ]+::\\(.*\\)$"))
-      (setq return             (looking-at "^\\([ \t]*\\)[rR]eturn"))
+      ;; (setq return             (looking-at "^\\([ \t]*\\)[rR]eturn"))
       (setq blank              (looking-at "^\\([ \t]*\\)\n"))
       ;; skip previous empty lines and commented lines
       (setq indent (ahk-previous-indent))
-      (setq prev (ahk-previous-indent))
       (save-excursion
         (when closing-brace
           (progn
@@ -444,7 +448,7 @@ Finds the command in the internal AutoHotkey documentation."
       (message (format
                 "indent: %s, current: %s previous: %s
 ob: %s, op: %s, cb: %s, bs: %s,
-if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
+if-else: %s, l: %s, kb: %s, bl: %s"
                 indent
                 (current-indentation)
                 (ahk-previous-indent)
@@ -455,7 +459,6 @@ if-else: %s, l: %s, kb: %s, ret: %s, bl: %s"
                 if-else
                 label
                 keybinding
-                return
                 blank
                 )))))
 
@@ -676,8 +679,7 @@ For details, see `comment-dwim'."
              (= (match-end 0) pt))
         (let ((start (match-beginning 0))
               (prefix (match-string 0))
-              (completion-ignore-case t)
-              completions)
+              (completion-ignore-case t))
           (list start pt (all-completions prefix all-keywords) :exclusive 'no :annotation-function 'ahk-company-annotation)))))
 
 (defun ahk-company-annotation (candidate)
@@ -763,7 +765,6 @@ Key Bindings
 
   ;; ui
   (use-local-map ahk-mode-map)
-  (easy-menu-add ahk-menu)
 
   ;; imenu
   (setq-local imenu-generic-expression ahk-imenu-generic-expression)
