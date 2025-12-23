@@ -337,12 +337,9 @@ Finds the command in the internal AutoHotkey documentation."
       (setq opening-brace      (looking-at "^[ \t]*{[^}]"))
       (setq opening-paren      (looking-at "^[ \t]*([^)]"))
       (setq if-else            (looking-at "^[ \t]*\\([iI]f\\|[Ee]lse\\)"))
-      ;; loop, return, else, prev are computed but not currently used
-      ;; (setq loop               (looking-at "^[ \t]*\\([Ll]oop\\)[^{]+"))
       (setq closing-brace      (looking-at "^[ \t]*\\([)}]\\|\\*\\/\\)"))  ; no "$" for the case of "} else {"
       (setq label              (looking-at "^[ \t]*[^:\n ]+:$"))
       (setq keybinding         (looking-at "^[ \t]*[^:\n ]+::\\(.*\\)$"))
-      ;; (setq return             (looking-at "^\\([ \t]*\\)[rR]eturn"))
       (setq blank              (looking-at "^\\([ \t]*\\)\n"))
       ;; skip previous empty lines and commented lines
       (setq indent (ahk-previous-indent))
