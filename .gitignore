@@ -1,0 +1,6 @@
+# Byte-compiled Emacs files
+*.elc
+
+# Package distribution files
+*-autoloads.el
+*-pkg.el

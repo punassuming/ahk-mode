@@ -6,12 +6,15 @@
 
 An Emacs major mode for editing [AutoHotkey][] scripts (`.ahk`).
 
+Supports both AutoHotkey v1 and v2 syntax.
+
 ## Features
 
-- Syntax highlighting
+- Syntax highlighting for both AutoHotkey v1 and v2
 - company-mode and ac-complete compatibility
 - indentation and commenting functionality
-- Documentation lookup capability
+- Documentation lookup capability (with version-aware URLs)
+- Configurable version selection per file or project
 
 ## Installation
 
@@ -38,6 +41,29 @@ If the installation doesn't work try refreshing the package list:
 
 <kbd>M-x package-refresh-contents</kbd>
 
+## Configuration
+
+### AutoHotkey Version Selection
+
+By default, ahk-mode uses AutoHotkey v1 syntax. You can change this globally or per-file:
+
+**Global Configuration:**
+```el
+(setq ahk-syntax-version 'v2)  ; Use v2 syntax by default
+```
+
+**Per-File Configuration:**
+Add this as the first line in your `.ahk` file:
+```ahk
+;; -*- mode: ahk-mode; ahk-syntax-version: v2; -*-
+```
+
+**Per-Directory Configuration:**
+Create a `.dir-locals.el` file in your project directory:
+```el
+((ahk-mode . ((ahk-syntax-version . v2))))
+```
+
 ## TODO
 
 * Improve indentation heuristics.
@@ -46,7 +72,7 @@ If the installation doesn't work try refreshing the package list:
 
 ## License
 
-Copyright © 2015-2016 Rich Alesi and [contributors][].
+Copyright ï¿½ 2015-2016 Rich Alesi and [contributors][].
 
 Distributed under the GNU General Public License; type <kbd>C-h C-c</kbd> to view it.
 
